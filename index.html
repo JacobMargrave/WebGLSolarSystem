@@ -1,0 +1,1773 @@
+<html><meta charset="utf-8"/> <body> <script src="http://mrdoob.github.com/three.js/build/three.min.js"></script>
+<script src="http://mrdoob.github.com/three.js/examples/js/controls/OrbitControls.js"></script>
+<script src="https://rawgit.com/dataarts/dat.gui/develop/build/dat.gui.js"></script>
+<script src= "https://mrdoob.github.com/three.js/src/loaders/JSONLoader.js"></script> 
+<div id='myDiv' style="background:black"></div>
+<script>
+
+var renderer, scene, camera, controls, distanceScene, distanceCamera, distanceControls, backgroundScene, backgroundCamera, backgroundControls,
+    star_texture, planet_distance, sun_texture, sun_glow, sun_rays, mercury_texture, mercury_bump_map, venus_texture, venus_bump_map,
+    earth_texture, earth_bump_map, earth_spec_map, earth_cloud_map, earth_cloud_alpha, moon_texture, mars_texture, mars_bump_map, jupiter_texture,
+    jupiter_ring_texture, io_texture, europa_texture, ganymede_texture, callisto_texture, saturn_texture, saturn_ring_texture, mimas_texture,
+    mimas_bump_map, enceladus_texture, tethys_texture, dione_texture, rhea_texture, titan_texture, iapetus_texture, uranus_texture, 
+    uranus_ring_texture, miranda_texture, ariel_texture, umbriel_texture, titania_texture, oberon_texture, neptune_texture, neptune_ring_texture,
+    triton_texture, pluto_texture, charon_texture, star_geo, star_mat, stars, sun_geo, sun_mat, sun, sun_glow_mat, sun_sprite, sun_flare, sun_rays,
+    mercury_geo, mercury_mat, mercury, mercury_path, venus_geo, venus_mat, venus, venus_path, earth_geo, earth_mat, earth, earth_path, 
+    earth_cloud_geo, earth_cloud_mat, earth_clouds, moon_geo, moon_mat, moon, orbit_moon, mars_geo, mars_mat, mars, mars_path, jupiter_geo,
+    jupiter_mat, jupiter, jupiter_path, jupiter_rings_geo, jupiter_rings_mat, jupiter_rings, orbit_jupiter_rings, io_geo, io_mat, io, orbit_io,
+    europa_geo, europa_mat, europa, orbit_europa, ganymede_geo, ganymede_mat, ganymede, orbit_ganymede, callisto_geo, callisto_mat, callisto,
+    orbit_callisto, saturn_geo, saturn_mat, saturn, saturn_path, saturn_rings_geo, saturn_rings_mat, saturn_rings, orbit_saturn_rings, 
+    mimas_geo, mimas_mat, mimas, orbit_mimas, enceladus_geo, enceladus_mat, enceladus, orbit_enceladus, tethys_geo, tethys_mat, tethys,
+    orbit_tethys, dione_geo, dione_mat, dione, orbit_dione, rhea_geo, rhea_mat, rhea, orbit_rhea, titan_geo, titan_mat, titan, orbit_titan,
+    iapetus_geo, iapetus_mat, iapetus, orbit_iapetus, uranus_geo, uranus_mat, uranus, uranus_path, uranus_rings_geo, uranus_rings_mat, 
+    uranus_rings, orbit_uranus_rings, miranda_geo, miranda_mat, miranda, orbit_miranda, ariel_geo, ariel_mat, ariel, orbit_ariel, umbriel_geo,
+    umbriel_mat, umbriel, orbit_umbriel, titania_geo, titania_mat, titania, orbit_titania, oberon_geo, oberon_mat, oberon, orbit_oberon,
+    neptune_geo, neptune_mat, neptune, neptune_path, neptune_rings_geo, neptune_rings_mat, neptune_rings, orbit_neptune_rings, triton_geo,
+    triton_mat, triton, orbit_triton, pluto_charon, pluto_geo, pluto_mat, pluto, charon_geo, charon_mat, charon, pluto_path, ambLight,
+    backAmbLight, sunlight, mercury_ellipse_mat, mercury_ellipse, mercury_points, mercury_ellipse_geo, mercury_line, venus_ellipse_mat,
+    venus_ellipse, venus_points, venus_ellipse_geo, venus_line, earth_ellipse_mat, earth_ellipse, earth_points, earth_ellipse_geo, earth_line,
+    mars_ellipse_mat, mars_ellipse, mars_points, mars_ellipse_geo, mars_line, jupiter_ellipse_mat, jupiter_ellipse, jupiter_points, 
+    jupiter_ellipse_geo, jupiter_line, saturn_ellipse_mat, saturn_ellipse, saturn_points, saturn_ellipse_geo, saturn_line, uranus_ellipse_mat,
+    uranus_ellipse, uranus_points, uranus_ellipse_geo, uranus_line, neptune_ellipse_mat, neptune_ellipse, neptune_points, neptune_ellipse_geo,
+    neptune_line, pluto_ellipse_mat, pluto_ellipse, pluto_points, pluto_ellipse_geo, pluto_line, venus_cloud_geo, venus_cloud_mat, venus_clouds,
+    venus_cloud_map, mars_cloud_geo, mars_cloud_mat, mars_clouds, mars_cloud_map, sun_camera, mercury_camera, venus_camera, earth_camera,
+    mars_camera, jupiter_camera, saturn_camera, uranus_camera, neptune_camera, pluto_camera, view_gui, look_At_Sun, look_At_Mercury,
+    look_At_Venus, look_At_Earth, look_At_Mars, look_At_Jupiter, look_At_Saturn, look_At_Uranus, look_At_Neptune, look_At_Pluto, orbit_gui,
+    orbits_off, orbits_on, cloud_gui, atmospheres_off, atmospheres_on, titan_clouds_geo, titan_clouds_mat, titan_clouds, callisto_bump_map,
+    io_bump_map, pluto_bump_map, moon_bump_map, titan_spec_map, titan_haze, blue_haze, titan_upper_haze, titan_camera, look_At_Titan,
+    moon_ellipse, moon_ellipse_mat, moon_points, moon_ellipse_geo, moon_line, phobos_texture, phobos_bump_map, phobos;
+    
+
+var sun_size		 	= 1000; // This is what controls everything related to the size of the planets and their distances
+
+var earth_size		 	= sun_size / 109.0;
+var earth_rotation       	= 0.0001; // This is what controls every movement of every planet and moon in the Solar System
+var earth_year           	= earth_rotation / 365.256;
+var earth_distance       	= sun_size / 0.005;
+var earth_eccentricity   	= earth_distance * 0.0167;
+
+var sun_rotation         	= earth_rotation * 0.0399202;
+
+var mercury_size	 	= earth_size * 0.383;
+var mercury_rotation     	= earth_rotation * 0.0170515;
+var mercury_year         	= earth_year * 4.1666667;
+var mercury_distance     	= earth_distance * 0.387;
+var mercury_eccentricity 	= mercury_distance * 0.2056;
+
+var venus_size		 	= earth_size * 0.949;
+var venus_rotation       	= earth_rotation * -0.0041148; // retrograde rotation
+var venus_year           	= earth_year * 1.6129032;
+var venus_distance       	= earth_distance * 0.723;
+var venus_eccentricity   	= venus_distance * 0.0068;
+
+var mars_size		 	= earth_size * 0.532;
+var mars_rotation 	 	= earth_rotation * 0.9746997;
+var mars_year 		 	= earth_year * 0.5319149;
+var mars_distance 		= earth_distance * 1.524;
+var mars_eccentricity 	 	= mars_distance * 0.0934;
+
+var ceres_size			= earth_size * 0.037;
+var ceres_rotation		= earth_rotation * 2.6448030;
+var ceres_year			= earth_year * 0.2173913;
+var ceres_distance		= earth_distance * 2.7675;
+var ceres_eccentricity		= ceres_distance * 0.075823;
+
+var jupiter_size	 	= earth_size * 11.21;
+var jupiter_rotation 	 	= earth_rotation * 2.4181360;
+var jupiter_year 	 	= earth_year * 0.0843170;
+var jupiter_distance 	 	= earth_distance * 5.203;
+var jupiter_eccentricity 	= jupiter_distance * 0.0484;
+
+var saturn_size		 	= earth_size * 9.45;
+var saturn_rotation 	 	= earth_rotation * 2.2748815;
+var saturn_year 	 	= earth_year * 0.0339443;
+var saturn_distance 	 	= earth_distance * 9.583;
+var saturn_eccentricity  	= saturn_distance * 0.0549;
+
+var uranus_size		 	= earth_size * 4.01;
+var uranus_rotation 	 	= earth_rotation * 1.3921178;
+var uranus_year 	 	= earth_year * 0.0119019;
+var uranus_distance 	 	= earth_distance * 19.218;
+var uranus_eccentricity  	= uranus_distance * 0.0472;
+
+var neptune_size	 	= earth_size * 3.88;
+var neptune_rotation 	 	= earth_rotation * 1.4896470;
+var neptune_year 	 	= earth_year * 0.0060691;
+var neptune_distance 	 	= earth_distance * 30.110;
+var neptune_eccentricity 	= neptune_distance * 0.0086;
+
+var pluto_size		 	= earth_size * 0.186;
+var pluto_rotation 	 	= earth_rotation * 0.1565624; 
+var pluto_year 		 	= earth_year * 0.0040332;
+var pluto_distance 	 	= earth_distance * 39.480;
+var pluto_from_barycenter	= earth_distance * 0.0000141045;
+var pluto_eccentricity 	 	= pluto_distance * 0.2488;
+
+var eris_size			= earth_size * 0.091;
+var eris_rotation		= earth_rotation * 0.9266409;
+var eris_year			= earth_year * 0.0017920;
+var eris_distance		= earth_distance * 67.789;
+var eris_eccentricity		= eris_distance * 0.44068;
+
+var sedna_size			= earth_size * 0.0830981;
+var sedna_rotation		= earth_rotation * 2.3362212;
+var sedna_year			= earth_year * 0.0000877;
+var sedna_distance		= earth_distance * 506.8;
+var sedna_eccentricity		= sedna_distance * 0.85491;
+
+// Moon Size, Motion, and Distance Parameters
+var moon_size		 	= earth_size * 0.2724;
+var moon_rotation	 	= earth_rotation * 0.036601;
+var moon_distance	 	= earth_distance * 0.00257;
+var moon_eccentricity	 	= moon_distance * 0.0549;
+
+var io_size		 	= earth_size * 0.286;
+var io_rotation		 	= earth_rotation * 0.565247;
+var io_distance		 	= earth_distance * 0.002819;
+var io_eccentricity	 	= io_distance * 0.0041;
+
+var europa_size		 	= earth_size * 0.245;
+var europa_rotation	 	= earth_rotation * 0.281596;
+var europa_distance	 	= earth_distance * 0.004485;
+var europa_eccentricity	 	= europa_distance * 0.009;
+
+var ganymede_size	 	= earth_size * 0.413;
+var ganymede_rotation	 	= earth_rotation * 0.139771;
+var ganymede_distance	 	= earth_distance * 0.007155;
+var ganymede_eccentricity	= ganymede_distance * 0.0013;
+
+var callisto_size	 	= earth_size * 0.378;
+var callisto_rotation	 	= earth_rotation * 0.059920;
+var callisto_distance	 	= earth_distance * 0.012585;
+var callisto_eccentricity	= callisto_distance * 0.0074;
+
+var mimas_size		 	= earth_size * 0.0311;
+var mimas_rotation	 	= earth_rotation * 1.061571;
+var mimas_distance	 	= earth_distance * 0.00124;
+var mimas_eccentricity	 	= mimas_distance * 0.0196;
+
+var enceladus_size	 	= earth_size * 0.0395;
+var enceladus_rotation	 	= earth_rotation * 0.729811;
+var enceladus_distance	 	= earth_distance * 0.001591;
+var enceladus_eccentricity	= enceladus_distance * 0.0047;
+
+var tethys_size		 	= earth_size * 0.083;
+var tethys_rotation	 	= earth_rotation * 0.529717;
+var tethys_distance	 	= earth_distance * 0.001969;
+var tethys_eccentricity		= tethys_distance * 0.0001;
+
+var dione_size		 	= earth_size * 0.088;
+var dione_rotation	 	= earth_rotation * 0.365077;
+var dione_distance	 	= earth_distance * 0.002523;
+var dione_eccentricity		= dione_distance * 0.0022;
+
+var rhea_size		 	= earth_size * 0.1198;
+var rhea_rotation	 	= earth_rotation * 0.221326;
+var rhea_distance	 	= earth_distance * 0.003523;
+var rhea_eccentricity		= rhea_distance * 0.0012583;
+
+var titan_size		 	= earth_size * 0.404;
+var titan_rotation	 	= earth_rotation * 0.062716;
+var titan_distance	 	= earth_distance * 0.008168;
+var titan_eccentricity	 	= titan_distance * 0.0288;
+
+var iapetus_size	 	= earth_size * 0.115;
+var iapetus_rotation	 	= earth_rotation * 0.012607;
+var iapetus_distance	 	= earth_distance * 0.023803;
+var iapetus_eccentricity	= iapetus_distance * 0.0286125;
+
+var miranda_size	 	= earth_size * 0.037;
+var miranda_rotation	 	= earth_rotation * 0.707474;
+var miranda_distance	 	= earth_distance * 0.000865;
+var miranda_eccentricity	= miranda_distance * 0.0013;
+
+var ariel_size		 	= earth_size * 0.0908;
+var ariel_rotation	 	= earth_rotation * 0.396825;
+var ariel_distance	 	= earth_distance * 0.001277;
+var ariel_eccentricity		= ariel_distance * 0.0012;
+
+var umbriel_size	 	= earth_size * 0.092;
+var umbriel_rotation	 	= earth_rotation * 0.241313;
+var umbriel_distance	 	= earth_distance * 0.001778;
+var umbriel_eccentricity	= umbriel_distance * 0.0039;
+
+var titania_size	 	= earth_size * 0.1235;
+var titania_rotation	 	= earth_rotation * 0.114860;
+var titania_distance	 	= earth_distance * 0.002914;
+var titania_eccentricity	= titania_distance * 0.0011;
+
+var oberon_size		 	= earth_size * 0.1194;
+var oberon_rotation	 	= earth_rotation * 0.074276;
+var oberon_distance	 	= earth_distance * 0.003901;
+var oberon_eccentricity		= oberon_distance * 0.0014;
+
+var triton_size		 	= earth_size * 0.2122;
+var triton_rotation	 	= earth_rotation * -0.170159; // retrograde
+var triton_distance	 	= earth_distance * 0.002371;
+var triton_eccentricity 	= triton_distance * 0.000016;
+
+var charon_size		 	= earth_size * 0.095;
+var charon_from_barycenter	= earth_distance * 0.00011691343;
+
+var egg_size			= earth_size * 2.0;
+var egg_rotation		= earth_rotation*2.0;
+var egg_year			= earth_year * 3.2;
+var egg_distance 		= earth_distance * 50.0;
+var egg_eccentricity 		= egg_distance * 0.112;
+
+renderer = new THREE.WebGLRenderer({antialias: true, alpha: false});
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.context.getShaderInfoLog = function(){return ''};
+document.getElementById('myDiv').appendChild(renderer.domElement);
+
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.BasicShadowMap;
+	
+// Creating the main scene
+scene = new THREE.Scene();
+camera = new THREE.PerspectiveCamera(45,window.innerWidth/window.innerHeight, 0.1, 600000000);
+camera.position.z = earth_distance;
+
+// To move the scene around
+controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableZoom = true;
+controls.enablePan = false;
+
+// Creating a background scene
+backgroundScene = new THREE.Scene();
+backgroundCamera = new THREE.PerspectiveCamera(45,window.innerWidth/window.innerHeight, 0.1, 300000);
+backgroundCamera.position.z = 800;
+
+// To move the background around (to make it more realistic)
+backgroundControls = new THREE.OrbitControls(backgroundCamera, renderer.domElement);
+backgroundControls.enableZoom = false;
+backgroundControls.enablePan = false;
+
+// Load the textures
+star_texture 		= new THREE.TextureLoader().load("images/milky_way.jpg");
+sun_texture  		= new THREE.TextureLoader().load("images/sun.jpg");
+sun_star		= new THREE.TextureLoader().load("images/lensflare.png");
+mercury_texture  	= new THREE.TextureLoader().load("images/mercury.jpg");
+mercury_bump_map  	= new THREE.TextureLoader().load("images/mercurybump.jpg");
+venus_texture   	= new THREE.TextureLoader().load("images/venus.jpg");
+venus_bump_map  	= new THREE.TextureLoader().load("images/venusbump.jpg");
+venus_cloud_map  	= new THREE.TextureLoader().load("images/venuscloudmap.jpg");
+earth_texture   	= new THREE.TextureLoader().load("images/earth.jpg");
+earth_bump_map  	= new THREE.TextureLoader().load("images/earthbump1k.jpg");
+earth_spec_map  	= new THREE.TextureLoader().load("images/earthspec1k.jpg");
+earth_cloud_map  	= new THREE.TextureLoader().load("images/earthcloudmap.jpg");
+earth_cloud_alpha  	= new THREE.TextureLoader().load("images/earthcloudmaptrans.jpg");
+earth_night		= new THREE.TextureLoader().load("images/earthlights1k.jpg");
+moon_texture  		= new THREE.TextureLoader().load("images/moon.jpg");
+moon_bump_map		= new THREE.TextureLoader().load("images/moonbump.jpg");
+mars_texture  		= new THREE.TextureLoader().load("images/mars.jpg");
+mars_bump_map   	= new THREE.TextureLoader().load("images/marsbump.jpg");
+mars_cloud_map  	= new THREE.TextureLoader().load("images/marscloudmap.png");
+ceres_texture		= new THREE.TextureLoader().load("images/ceres.jpg");
+ceres_bump_map		= new THREE.TextureLoader().load("images/ceresbump.png");
+jupiter_texture  	= new THREE.TextureLoader().load("images/jupiter.jpg");
+jupiter_ring_texture  	= new THREE.TextureLoader().load("images/jupiterringcolor.png");
+io_texture  		= new THREE.TextureLoader().load("images/io.jpg");
+io_bump_map		= new THREE.TextureLoader().load("images/iobump.jpg");
+europa_texture  	= new THREE.TextureLoader().load("images/europa.jpg");
+europa_bump_map		= new THREE.TextureLoader().load("images/europabump.jpg");
+europa_spec_map		= new THREE.TextureLoader().load("images/europaspecular.jpg");
+ganymede_texture  	= new THREE.TextureLoader().load("images/ganymede.jpg");
+ganymede_bump_map	= new THREE.TextureLoader().load("images/ganymedebump.jpg");
+ganymede_spec_map	= new THREE.TextureLoader().load("images/ganymedespecular.jpg");
+callisto_texture  	= new THREE.TextureLoader().load("images/callisto.png");
+callisto_bump_map	= new THREE.TextureLoader().load("images/callistobump.jpg");
+callisto_spec_map	= new THREE.TextureLoader().load("images/callistospecular.jpg");
+saturn_texture  	= new THREE.TextureLoader().load("images/saturn.jpg");
+saturn_ring_texture  	= new THREE.TextureLoader().load("images/saturnringcolor.png");
+mimas_texture   	= new THREE.TextureLoader().load("images/mimas.jpg");
+mimas_bump_map  	= new THREE.TextureLoader().load("images/mimasbump.jpg");
+mimas_spec_map		= new THREE.TextureLoader().load("images/mimasspecular.jpg");
+enceladus_texture  	= new THREE.TextureLoader().load("images/enceladus.jpg");
+enceladus_bump_map	= new THREE.TextureLoader().load("images/enceladusbump.jpg");
+enceladus_spec_map	= new THREE.TextureLoader().load("images/enceladusspecular.jpg");
+tethys_texture  	= new THREE.TextureLoader().load("images/tethys.jpg");
+tethys_bump_map		= new THREE.TextureLoader().load("images/tethysbump.jpg");
+tethys_spec_map		= new THREE.TextureLoader().load("images/tethysspecular.jpg");
+dione_texture   	= new THREE.TextureLoader().load("images/dione.jpg");
+dione_bump_map		= new THREE.TextureLoader().load("images/dionebump.jpg");
+dione_spec_map		= new THREE.TextureLoader().load("images/dionespecular.jpg");
+rhea_texture  		= new THREE.TextureLoader().load("images/rhea.jpg");
+rhea_bump_map		= new THREE.TextureLoader().load("images/rheabump.jpg");
+rhea_spec_map		= new THREE.TextureLoader().load("images/rheaspecular.jpg");
+titan_texture   	= new THREE.TextureLoader().load("images/titansurface.png");
+titan_bump_map		= new THREE.TextureLoader().load("images/titanbump.jpg");
+titan_cloud_map		= new THREE.TextureLoader().load("images/titan.jpg");
+titan_spec_map		= new THREE.TextureLoader().load("images/titanspecmap.jpg");
+titan_haze		= new THREE.TextureLoader().load("Images/titanhaze.png");
+iapetus_texture  	= new THREE.TextureLoader().load("images/iapetus.jpg");
+iapetus_bump_map	= new THREE.TextureLoader().load("images/iapetusbump.jpg");
+iapetus_spec_map	= new THREE.TextureLoader().load("images/iapetusspecular.jpg");
+uranus_texture  	= new THREE.TextureLoader().load("images/uranus.jpg");
+uranus_ring_texture  	= new THREE.TextureLoader().load("images/uranusringcolor.png");
+miranda_texture  	= new THREE.TextureLoader().load("images/miranda.jpg");
+miranda_bump_map	= new THREE.TextureLoader().load("images/mirandabump.jpg");
+miranda_spec_map	= new THREE.TextureLoader().load("images/mirandaspecular.jpg");
+ariel_texture   	= new THREE.TextureLoader().load("images/ariel.jpg");
+ariel_bump_map		= new THREE.TextureLoader().load("images/arielbump.jpg");
+ariel_spec_map		= new THREE.TextureLoader().load("images/arielspecular.jpg");
+umbriel_texture  	= new THREE.TextureLoader().load("images/umbriel.jpg");
+umbriel_bump_map	= new THREE.TextureLoader().load("images/umbrielbump.jpg");
+umbriel_spec_map	= new THREE.TextureLoader().load("images/umbrielspecular.jpg");
+titania_texture  	= new THREE.TextureLoader().load("images/titania.jpg");
+titania_bump_map	= new THREE.TextureLoader().load("images/titaniabump.jpg");
+titania_spec_map	= new THREE.TextureLoader().load("images/titaniaspecular.jpg");
+oberon_texture  	= new THREE.TextureLoader().load("images/oberon.jpg");
+oberon_bump_map		= new THREE.TextureLoader().load("images/oberonbump.jpg");
+oberon_spec_map		= new THREE.TextureLoader().load("images/oberonspecular.jpg");
+neptune_texture  	= new THREE.TextureLoader().load("images/neptune.jpg");
+neptune_ring_texture  	= new THREE.TextureLoader().load("images/neptuneringcolor.png");
+triton_texture  	= new THREE.TextureLoader().load("images/triton.png");
+triton_bump_map		= new THREE.TextureLoader().load("images/tritonbump.jpg");
+triton_spec_map		= new THREE.TextureLoader().load("images/tritonspecular.jpg");
+pluto_texture   	= new THREE.TextureLoader().load("images/pluto.png");
+pluto_bump_map		= new THREE.TextureLoader().load("images/plutobump.jpg");
+pluto_spec_map		= new THREE.TextureLoader().load("images/plutospecular.jpg");
+charon_texture  	= new THREE.TextureLoader().load("images/charon.png");
+charon_bump_map		= new THREE.TextureLoader().load("images/charonbump.jpg");
+charon_spec_map		= new THREE.TextureLoader().load("images/charonspecular.jpg");
+eris_texture		= new THREE.TextureLoader().load("images/eris.jpg");
+sedna_texture		= new THREE.TextureLoader().load("images/sedna.jpg");
+egg_texture		= new THREE.TextureLoader().load("images/egg.jpg");
+
+//********************************************************
+
+// Adding the stars in the background
+star_geo = new THREE.SphereGeometry(100000, 32, 32);
+star_mat = new THREE.MeshPhongMaterial({map: star_texture, side: THREE.BackSide, shininess: 0,});
+stars = new THREE.Mesh(star_geo, star_mat);
+stars.material.depthTest = false;
+stars.material.depthWrite = false;
+backgroundScene.add(stars);
+
+//********************************************************
+
+// Adding the Sun to the Solar System
+sun_geo = new THREE.SphereGeometry(sun_size, 50, 50);
+sun_mat = new THREE.MeshBasicMaterial({map: sun_texture,});
+sun = new THREE.Mesh(sun_geo, sun_mat);
+scene.add(sun);
+
+// Viewing the Sun from a distance...lensflare effect
+sun_point = new THREE.SpriteMaterial({map: sun_star, color: 0xffffff, transparent: true, depthWrite: false,
+	blending: THREE.AdditiveBlending,});
+sun_distance = new THREE.Sprite(sun_point);
+sun_distance.scale.set(100*sun_size, 100*sun_size, 1.0);
+sun.add(sun_distance);
+
+//********************************************************
+
+// Adding Mercury to the Solar System
+mercury_geo = new THREE.SphereGeometry(mercury_size, 50, 50);
+mercury_mat = new THREE.MeshPhongMaterial({map: mercury_texture, bumpMap: mercury_bump_map, bumpScale: 0.05, shininess: 0});
+mercury = new THREE.Mesh(mercury_geo, mercury_mat);
+mercury_path = new THREE.Object3D();
+mercury_path.rotation.z = (7/180)*Math.PI; // Orbital Inclination
+mercury_path.rotation.y = (48.3/180)*Math.PI; // Right Ascension of Ascending Node
+mercury_path.add(mercury);
+scene.add(mercury_path);
+
+//********************************************************
+
+// Adding Venus to the Solar System
+venus_geo = new THREE.SphereGeometry(venus_size, 50, 50);
+venus_mat = new THREE.MeshPhongMaterial({map: venus_texture, bumpMap: venus_bump_map, bumpScale: 0.05, shininess: 0,});
+venus = new THREE.Mesh(venus_geo, venus_mat);
+venus_path = new THREE.Object3D();
+venus_path.rotation.z = (3.4/180)*Math.PI; // Orbital Inclination
+venus_path.rotation.y = (76.6/180)*Math.PI; // Right Ascension of Ascending Node
+venus_path.add(venus);
+scene.add(venus_path);
+
+// Adding Venus's toxic clouds
+venus_cloud_geo = new THREE.SphereGeometry(1.01*venus_size, 50, 50);
+venus_cloud_mat = new THREE.MeshPhongMaterial({map: venus_cloud_map, side: THREE.FrontSide, opacity: 1, transparent: false,
+	shininess: 0,});
+venus_clouds = new THREE.Mesh(venus_cloud_geo, venus_cloud_mat);
+venus.add(venus_clouds);
+
+//********************************************************
+
+// Adding Earth to the Solar System
+earth_geo = new THREE.SphereGeometry(earth_size, 50, 50);
+earth_mat = new THREE.MeshPhongMaterial({map: earth_texture, bumpMap: earth_bump_map, bumpScale: 0.05, 
+	specularMap: earth_spec_map, specular: 0x555555,});
+earth = new THREE.Mesh(earth_geo, earth_mat);
+earth_path = new THREE.Object3D();
+earth_path.rotation.z = 0; // Orbital Inclination; 0 because Earth's orbit represents the ecliptic
+earth_path.rotation.y = (175/180)*Math.PI; // Right Ascension of Ascending Node
+earth_path.add(earth);
+scene.add(earth_path);
+
+// Adding Earth's Clouds
+earth_cloud_geo = new THREE.SphereGeometry(1.01*earth_size, 50, 50);
+earth_cloud_mat = new THREE.MeshPhongMaterial({map: earth_cloud_map, alphaMap: earth_cloud_alpha, side: THREE.FrontSide, opacity: 0.8,
+	transparent: true, depthWrite: false,});
+earth_clouds = new THREE.Mesh(earth_cloud_geo, earth_cloud_mat);
+earth.add(earth_clouds);
+
+// Adding the Lights of Human Civilization!!!
+/*
+earth_night_geo = new THREE.SphereGeometry(1.0025*earth_size, 50, 50);
+earth_night_mat = new THREE.MeshPhongMaterial({color: 0xfff0ba, emissive: 0xfff0ba, specular: 0x000000, blending: THREE.AdditiveBlending,
+	depthTest: 0, transparent: true, alphaMap: earth_night, opacity: 0.25});
+earth_night_lights = new THREE.Mesh(earth_night_geo, earth_night_mat);
+earth_night_lights.receiveShadow = true;
+earth_night_lights.castShadow = true;
+earth.add(earth_night_lights);
+*/
+
+//*****************
+// The Moon
+//*****************	
+
+// Adding the Moon to the Solar System
+moon_geo = new THREE.SphereGeometry(moon_size, 50, 50);
+moon_mat = new THREE.MeshPhongMaterial({map: moon_texture, bumpMap: moon_bump_map, bumpScale: 0.05, shininess: 0});
+moon = new THREE.Mesh(moon_geo, moon_mat);
+orbit_moon = new THREE.Object3D();
+moons_orbit = new THREE.Object3D();
+orbit_moon.rotation.z = (-18.305/180)*Math.PI; // Orbital Inclination (relative to Earth's equator)
+orbit_moon.rotation.y = (125/180)*Math.PI; // Right Ascension of Ascending Node
+earth.add(moons_orbit);
+moons_orbit.add(orbit_moon);
+orbit_moon.add(moon);
+
+//********************************************************
+
+// Adding Mars to the Solar System
+mars_geo = new THREE.SphereGeometry(mars_size, 50, 50);
+mars_mat = new THREE.MeshPhongMaterial({map: mars_texture, bumpMap: mars_bump_map, bumpScale: 0.05, shininess: 0,});
+mars = new THREE.Mesh(mars_geo, mars_mat);
+mars_path = new THREE.Object3D();
+mars_path.rotation.z = (1.85/180)*Math.PI; // Orbital Inclination
+mars_path.rotation.y = (49.7/180)*Math.PI; // Right Ascension of Ascending Node
+mars_path.add(mars);
+scene.add(mars_path);
+
+// Adding dust and clouds in Mars's thin atmosphere
+mars_cloud_geo = new THREE.SphereGeometry(1.01*mars_size, 50, 50);
+mars_cloud_mat = new THREE.MeshPhongMaterial({map: mars_cloud_map, alphaMap: mars_cloud_map, side: THREE.FrontSide, opacity: 0.8,
+	transparent: true, depthWrite: false,});
+mars_clouds = new THREE.Mesh(mars_cloud_geo, mars_cloud_mat);
+mars.add(mars_clouds);
+
+//*********************************************************
+
+// Adding Ceres to the Solar System
+ceres_geo = new THREE.SphereGeometry(ceres_size, 50, 50);
+ceres_mat = new THREE.MeshPhongMaterial({map: ceres_texture, bumpMap: ceres_bump_map, bumpScale: 0.05, shininess: 0,});
+ceres = new THREE.Mesh(ceres_geo, ceres_mat);
+ceres_path = new THREE.Object3D();
+ceres_path.rotation.z = (10.593/180)*Math.PI; // Orbital Inclination
+ceres_path.rotation.y = (80.3/180)*Math.PI; // Right Ascension of Ascending Node
+ceres_path.add(ceres);
+scene.add(ceres_path);
+
+//*********************************************************
+
+// Adding Jupiter to the Solar System
+jupiter_geo = new THREE.SphereGeometry(jupiter_size, 50, 50);
+jupiter_geo.applyMatrix(new THREE.Matrix4().makeScale(1.0, 0.93, 1.0)); // Equatorial bulge
+jupiter_mat = new THREE.MeshPhongMaterial({map: jupiter_texture, shininess: 0});
+jupiter = new THREE.Mesh(jupiter_geo, jupiter_mat);
+//jupiter.castShadow = true;
+//jupiter.receiveShadow = true;
+jupiter_path = new THREE.Object3D();
+jupiter_path.rotation.z = (1.3/180)*Math.PI; // Orbital Inclination
+jupiter_path.rotation.y = (100/180)*Math.PI; // Right Ascension of Ascending Node
+jupiter_path.add(jupiter);
+scene.add(jupiter_path);
+
+// Adding Jupiter's Rings
+jupiter_rings_geo = new THREE.RingGeometry(1.72*jupiter_size, 1.806*jupiter_size, 36);
+jupiter_rings_mat = new THREE.MeshPhongMaterial({map: jupiter_ring_texture, alphaMap: jupiter_ring_texture, color: 0xffffff,
+	specular: 0, shininess: 0, emissive: 0, side: THREE.DoubleSide, transparent: true, depthWrite: false, opacity: 4,});
+jupiter_rings = new THREE.Mesh(jupiter_rings_geo, jupiter_rings_mat);
+orbit_jupiter_rings = new THREE.Object3D();
+jupiter.add(orbit_jupiter_rings);
+orbit_jupiter_rings.add(jupiter_rings);
+jupiter.add(jupiter_rings);
+
+//***********************************
+// Jupiter's Moons
+//***********************************
+
+// Io
+io_geo = new THREE.SphereGeometry(io_size, 50, 50);
+io_mat = new THREE.MeshPhongMaterial({map: io_texture, bumpMap: io_bump_map, bumpScale: 0.05, shininess: 0});
+io = new THREE.Mesh(io_geo, io_mat);
+//io.castShadow = true;
+//io.receiveShadow = true;
+orbit_io = new THREE.Object3D();
+ios_orbit = new THREE.Object3D();
+orbit_io.rotation.z = (0.05/180)*Math.PI; // Orbitial Inclination (relative to Jupiter's equator)
+orbit_io.rotation.y = (338/180)*Math.PI; // Right Ascension of Ascending Node
+jupiter.add(ios_orbit);
+ios_orbit.add(orbit_io);
+orbit_io.add(io);
+
+// Europa
+europa_geo = new THREE.SphereGeometry(europa_size, 50, 50);
+europa_mat = new THREE.MeshPhongMaterial({map: europa_texture, bumpMap: europa_bump_map, bumpScale: 0.05, 
+	specularMap: europa_spec_map, specular: 0x555555});
+europa = new THREE.Mesh(europa_geo, europa_mat);
+orbit_europa = new THREE.Object3D();
+europas_orbit = new THREE.Object3D();
+orbit_europa.rotation.z = (0.470/180)*Math.PI; // Orbital Inclination (relative to Jupiter's equator)
+orbit_europa.rotation.y = (339/180)*Math.PI; // Right Ascension of Ascending Node
+jupiter.add(europas_orbit);
+europas_orbit.add(orbit_europa);
+orbit_europa.add(europa);
+
+// Ganymede
+ganymede_geo = new THREE.SphereGeometry(ganymede_size, 50, 50);
+ganymede_mat = new THREE.MeshPhongMaterial({map: ganymede_texture, bumpMap: ganymede_bump_map, bumpScale: 0.05, 
+	specularMap: ganymede_spec_map, specular: 0x555555});
+ganymede = new THREE.Mesh(ganymede_geo, ganymede_mat);
+orbit_ganymede = new THREE.Object3D();
+ganymedes_orbit = new THREE.Object3D();
+orbit_ganymede.rotation.z = (0.20/180)*Math.PI; // Orbital Inclination (relative to Jupiter's equator)
+orbit_ganymede.rotation.y = (340/180)*Math.PI; // Right Ascension of Ascending Node
+jupiter.add(ganymedes_orbit);
+ganymedes_orbit.add(orbit_ganymede);
+orbit_ganymede.add(ganymede);
+
+// Callisto
+callisto_geo = new THREE.SphereGeometry(callisto_size, 50, 50);
+callisto_mat = new THREE.MeshPhongMaterial({map: callisto_texture, bumpMap: callisto_bump_map, bumpScale: 0.05, 
+	specularMap: callisto_spec_map, specular: 0x555555});
+callisto = new THREE.Mesh(callisto_geo, callisto_mat);
+orbit_callisto = new THREE.Object3D();
+callistos_orbit = new THREE.Object3D();
+orbit_callisto.rotation.z = (-1.113/180)*Math.PI; // Orbital Inclination (relative to Jupiter's equator)
+orbit_callisto.rotation.y = (336/180)*Math.PI; // Right Ascension of Ascending Node
+jupiter.add(callistos_orbit);
+callistos_orbit.add(orbit_callisto);
+orbit_callisto.add(callisto);
+
+//************************************************
+
+// Adding Saturn to the Solar System
+saturn_geo = new THREE.SphereGeometry(saturn_size, 50, 50);
+saturn_geo.applyMatrix(new THREE.Matrix4().makeScale(1.0, 0.9, 1.0)); // Equatorial bulge
+saturn_mat = new THREE.MeshPhongMaterial({map: saturn_texture, shininess: 0});
+saturn = new THREE.Mesh(saturn_geo, saturn_mat);
+//saturn.castShadow = true;
+//saturn.receiveShadow = true;
+saturn_path = new THREE.Object3D();
+saturn_path.rotation.z = (2.5/180)*Math.PI; // Orbital Inclination
+saturn_path.rotation.y = (114/180)*Math.PI; // Right Ascension of Ascending Node
+saturn_path.add(saturn);
+scene.add(saturn_path);
+
+// Adding Saturn's Rings
+saturn_rings_geo = new THREE.RingGeometry(1.110*saturn_size, 2.326*saturn_size, 36);
+saturn_rings_mat = new THREE.MeshPhongMaterial({map: saturn_ring_texture, alphaMap: saturn_ring_texture, color: 0xffffff,
+	specular: 0x555555, shininess: 3, emissive: 10, side: THREE.DoubleSide, transparent: true, opacity: 2, depthWrite: false,});
+saturn_rings = new THREE.Mesh(saturn_rings_geo, saturn_rings_mat);
+//saturn_rings.castShadow = true;
+//saturn_rings.receiveShadow = true;
+orbit_saturn_rings = new THREE.Object3D();
+saturn.add(orbit_saturn_rings);
+orbit_saturn_rings.add(saturn_rings);
+saturn.add(saturn_rings);
+
+//***********************************
+// Saturn's Moons
+//*********************************** 
+
+// Mimas
+mimas_geo = new THREE.SphereGeometry(mimas_size, 50, 50);
+mimas_mat = new THREE.MeshPhongMaterial({map: mimas_texture, bumpMap: mimas_bump_map, bumpScale: 0.05, 
+	specularMap: mimas_spec_map, specular: 0x555555, shininess: 10,});	
+mimas = new THREE.Mesh(mimas_geo, mimas_mat);
+orbit_mimas = new THREE.Object3D();
+mimass_orbit = new THREE.Object3D();
+orbit_mimas.rotation.z = (1.574/180)*Math.PI; // Orbital Inclination (relative to Saturn's equator)
+orbit_mimas.rotation.y = (167/180)*Math.PI; // Right Ascension of Ascending Node
+saturn.add(mimass_orbit);
+mimass_orbit.add(orbit_mimas);
+orbit_mimas.add(mimas);
+
+// Enceladus
+enceladus_geo = new THREE.SphereGeometry(enceladus_size, 50, 50);
+enceladus_mat = new THREE.MeshPhongMaterial({map: enceladus_texture, bumpMap: enceladus_bump_map, bumpScale: 0.05, 
+	specularMap: enceladus_spec_map, specular: 0x555555, shininess: 10});
+enceladus = new THREE.Mesh(enceladus_geo, enceladus_mat);
+orbit_enceladus = new THREE.Object3D();
+enceladuss_orbit = new THREE.Object3D();
+orbit_enceladus.rotation.z = (0.019/180)*Math.PI; // Orbital Inclination (relative to Saturn's equator)
+orbit_enceladus.rotation.y = (170/180)*Math.PI; // Right Ascension of Ascending Node
+saturn.add(enceladuss_orbit);
+enceladuss_orbit.add(orbit_enceladus);
+orbit_enceladus.add(enceladus);
+
+// Tethys
+tethys_geo = new THREE.SphereGeometry(tethys_size, 50, 50);
+tethys_mat = new THREE.MeshPhongMaterial({map: tethys_texture, specular: 0x555555, bumpMap: tethys_bump_map, bumpScale: 0.05,
+	specularMap: tethys_spec_map, specular: 0x555555, shininess: 20});
+tethys = new THREE.Mesh(tethys_geo, tethys_mat);
+orbit_tethys = new THREE.Object3D();
+tethyss_orbit = new THREE.Object3D();
+orbit_tethys.rotation.z = (1.120/180)*Math.PI; // Orbital Inclination (relative to Saturn's equator)
+orbit_tethys.rotation.y = (170/180)*Math.PI; // Right Ascension of Ascending Node
+saturn.add(tethyss_orbit);
+tethyss_orbit.add(orbit_tethys);
+orbit_tethys.add(tethys);
+
+// Dione
+dione_geo = new THREE.SphereGeometry(dione_size, 50, 50);
+dione_mat = new THREE.MeshPhongMaterial({map: dione_texture, bumpMap: dione_bump_map, bumpScale: 0.05,
+	specularMap: dione_spec_map, specular: 0x555555, shininess: 20});
+dione = new THREE.Mesh(dione_geo, dione_mat);
+orbit_dione = new THREE.Object3D();
+diones_orbit = new THREE.Object3D();
+orbit_dione.rotation.z = (0.019/180)*Math.PI; // Orbital Inclination (relative to Saturn's equator)
+orbit_dione.rotation.y = (170/180)*Math.PI; // Right Ascension of Ascending Node
+saturn.add(diones_orbit);
+diones_orbit.add(orbit_dione);
+orbit_dione.add(dione);	
+
+// Rhea
+rhea_geo = new THREE.SphereGeometry(rhea_size, 50, 50);
+rhea_mat = new THREE.MeshPhongMaterial({map: rhea_texture, bumpMap: rhea_bump_map, bumpScale: 0.05,
+	specularMap: rhea_spec_map, specular: 0x555555, shininess: 10});
+rhea = new THREE.Mesh(rhea_geo, rhea_mat);
+orbit_rhea = new THREE.Object3D();
+rheas_orbit = new THREE.Object3D();
+orbit_rhea.rotation.z = (0.345/180)*Math.PI; // Orbital Inclination (relative to Saturn's equator)
+orbit_rhea.rotation.y = (170/180)*Math.PI; // Right Ascension of Ascending Node
+saturn.add(rheas_orbit);
+rheas_orbit.add(orbit_rhea);
+orbit_rhea.add(rhea);
+
+// Titan, Saturn's Largest Moon
+titan_geo = new THREE.SphereGeometry(titan_size, 50, 50);
+titan_mat = new THREE.MeshPhongMaterial({map: titan_texture, bumpMap: titan_bump_map, bumpScale: 0.05, 
+	specularMap: titan_spec_map, specular: 0x555555});
+titan = new THREE.Mesh(titan_geo, titan_mat);
+orbit_titan = new THREE.Object3D();
+titans_orbit = new THREE.Object3D();
+orbit_titan.rotation.z = (0.34854/180)*Math.PI; // Orbital Inclination (relative to Saturn's equator)
+orbit_titan.rotation.y = (170/180)*Math.PI; // Right Ascension of Ascending Node
+saturn.add(titans_orbit);
+titans_orbit.add(orbit_titan);
+orbit_titan.add(titan);
+
+// Adding Titan's clouds
+titan_cloud_geo = new THREE.SphereGeometry(1.01*titan_size, 50, 50);
+titan_cloud_mat = new THREE.MeshPhongMaterial({map: titan_cloud_map, side: THREE.FrontSide, opacity: 1, transparent: false,
+        shininess: 0,});
+titan_clouds = new THREE.Mesh(titan_cloud_geo, titan_cloud_mat);
+titan.add(titan_clouds);
+
+// Adding Titan's upper atmospheric haze
+blue_haze = new THREE.SpriteMaterial({map: titan_haze, color: 0x0000ff, transparent: true, depthWrite: false,
+        blending: THREE.AdditiveBlending,});
+titan_upper_haze = new THREE.Sprite(blue_haze);
+titan_upper_haze.scale.set(3*titan_size, 3*titan_size, 1.0);
+titan.add(titan_upper_haze);
+
+
+// Iapetus
+iapetus_geo = new THREE.SphereGeometry(iapetus_size, 50, 50);
+iapetus_mat = new THREE.MeshPhongMaterial({map: iapetus_texture, bumpMap: iapetus_bump_map, bumpScale: 0.05, 
+	specularMap: iapetus_spec_map, specular: 0x555555, shininess: 10,});
+iapetus = new THREE.Mesh(iapetus_geo, iapetus_mat);
+orbit_iapetus = new THREE.Object3D();
+iapetuss_orbit = new THREE.Object3D();
+orbit_iapetus.rotation.z = (15.47/180)*Math.PI; // Orbital Inclination (relative to Saturn's equator)
+orbit_iapetus.rotation.y = (131/180)*Math.PI; // Right Ascension of Ascending Node
+saturn.add(iapetuss_orbit);
+iapetuss_orbit.add(orbit_iapetus);
+orbit_iapetus.add(iapetus);
+
+//*****************************************************
+
+// Adding Uranus to the Solar System
+uranus_geo = new THREE.SphereGeometry(uranus_size, 50, 50);
+uranus_geo.applyMatrix(new THREE.Matrix4().makeScale(1.0, 0.98, 1.0));
+uranus_mat = new THREE.MeshPhongMaterial({map: uranus_texture, shininess: 0});
+uranus = new THREE.Mesh(uranus_geo, uranus_mat);
+uranus_path = new THREE.Object3D();
+uranus_path.rotation.z = (0.772/180)*Math.PI; // Orbital Inclination
+uranus_path.rotation.y = (74/180)*Math.PI; // Right Ascension of Ascending Node
+uranus_path.add(uranus);
+scene.add(uranus_path);
+
+// Adding Uranus's Rings
+uranus_rings_geo = new THREE.RingGeometry(1.637*uranus_size, 2.006*uranus_size, 36);
+uranus_rings_mat = new THREE.MeshPhongMaterial({map: uranus_ring_texture, alphaMap: uranus_ring_texture, color: 0xffffff,
+	specular: 0, shininess: 0, emissive: 0, side: THREE.DoubleSide, transparent: true, depthWrite: false, opacity: 1,});
+uranus_rings = new THREE.Mesh(uranus_rings_geo, uranus_rings_mat);
+orbit_uranus_rings = new THREE.Object3D();
+uranus.add(orbit_uranus_rings);
+orbit_uranus_rings.add(uranus_rings);
+uranus.add(uranus_rings);
+
+//******************************
+// Uranus's Moons...
+//******************************
+
+// Miranda
+miranda_geo = new THREE.SphereGeometry(miranda_size, 50, 50);
+miranda_mat = new THREE.MeshPhongMaterial({map: miranda_texture, bumpMap: miranda_bump_map, bumpScale: 0.05, 
+	specularMap: miranda_spec_map, specular: 0x555555, shininess: 15,});
+miranda = new THREE.Mesh(miranda_geo, miranda_mat);
+orbit_miranda = new THREE.Object3D();
+mirandas_orbit = new THREE.Object3D();
+orbit_miranda.rotation.z = (4.232/180)*Math.PI; // Orbital Inclination (relative to Uranus's equator)
+orbit_miranda.rotation.y = (172/180)*Math.PI; // Right Ascension of the Ascending Node
+uranus.add(mirandas_orbit);
+mirandas_orbit.add(orbit_miranda);
+orbit_miranda.add(miranda);
+
+// Ariel
+ariel_geo = new THREE.SphereGeometry(ariel_size, 50, 50);
+ariel_mat = new THREE.MeshPhongMaterial({map: ariel_texture, bumpMap: ariel_bump_map, bumpScale: 0.05, 
+	specularMap: ariel_spec_map, specular: 0x555555, shininess: 15,});
+ariel = new THREE.Mesh(ariel_geo, ariel_mat);
+orbit_ariel = new THREE.Object3D();
+ariels_orbit = new THREE.Object3D();
+orbit_ariel.rotation.z = (0.260/180)*Math.PI; // Orbital Inclination (relative to Uranus's equator)
+orbit_ariel.rotation.y = (168/180)*Math.PI; // Right Ascension of the Ascending Node
+uranus.add(ariels_orbit);
+ariels_orbit.add(orbit_ariel);
+orbit_ariel.add(ariel);
+
+// Umbriel
+umbriel_geo = new THREE.SphereGeometry(umbriel_size, 50, 50);
+umbriel_mat = new THREE.MeshPhongMaterial({map: umbriel_texture, bumpMap: umbriel_bump_map, bumpScale: 0.05, 
+	specular: 0x555555, shininess: 10,});
+umbriel = new THREE.Mesh(umbriel_geo, umbriel_mat);
+orbit_umbriel = new THREE.Object3D();
+umbriels_orbit = new THREE.Object3D();
+orbit_umbriel.rotation.z = (0.128/180)*Math.PI; // Orbital Inclination (relative to Uranus's equator)
+orbit_umbriel.rotation.y = (168/180)*Math.PI; // Right Ascension of the Ascending Node
+uranus.add(umbriels_orbit);
+umbriels_orbit.add(orbit_umbriel);
+orbit_umbriel.add(umbriel);
+
+// Titania
+titania_geo = new THREE.SphereGeometry(titania_size, 50, 50);
+titania_mat = new THREE.MeshPhongMaterial({map: titania_texture, bumpMap: titania_bump_map, bumpScale: 0.05,
+	specular: 0x555555, shininess: 10,});
+titania = new THREE.Mesh(titania_geo, titania_mat);
+orbit_titania = new THREE.Object3D();
+titanias_orbit = new THREE.Object3D();
+orbit_titania.rotation.z = (0.340/180)*Math.PI; // Orbital Inclination (relative to Uranus's equator)
+orbit_titania.rotation.y = (168/180)*Math.PI; // Right Ascension of the Ascending Node
+uranus.add(titanias_orbit);
+titanias_orbit.add(orbit_titania);
+orbit_titania.add(titania);
+
+// Oberon
+oberon_geo = new THREE.SphereGeometry(oberon_size, 50, 50);
+oberon_mat = new THREE.MeshPhongMaterial({map: oberon_texture, bumpMap: oberon_bump_map, bumpScale: 0.05, 
+	specular: 0x555555, shininess: 10,});
+oberon = new THREE.Mesh(oberon_geo, oberon_mat);
+orbit_oberon = new THREE.Object3D();
+oberons_orbit = new THREE.Object3D();
+orbit_oberon.rotation.z = (0.058/180)*Math.PI; // Orbital Inclination (relative to Uranus's equator)
+orbit_oberon.rotation.y = (168/180)*Math.PI; // Right Ascension of the Ascending Node
+uranus.add(oberons_orbit);
+oberons_orbit.add(orbit_oberon);
+orbit_oberon.add(oberon);
+
+//************************************************
+
+// Adding Neptune to the Solar System
+neptune_geo = new THREE.SphereGeometry(neptune_size, 50, 50);
+neptune_geo.applyMatrix(new THREE.Matrix4().makeScale(1.0, 0.98, 1.0));
+neptune_mat = new THREE.MeshPhongMaterial({map: neptune_texture, shininess: 0});
+neptune = new THREE.Mesh(neptune_geo, neptune_mat);
+neptune_path = new THREE.Object3D();
+neptune_path.rotation.z = (1.77/180)*Math.PI; // Orbital Inclination
+neptune_path.rotation.y = (132/180)*Math.PI; // Right Ascension of Ascending Node
+neptune_path.add(neptune);
+scene.add(neptune_path);
+
+// Adding Neptune's Rings
+neptune_rings_geo = new THREE.RingGeometry(1.692*neptune_size, 2.541*neptune_size, 36);
+neptune_rings_mat = new THREE.MeshPhongMaterial({map: neptune_ring_texture, alphaMap: neptune_ring_texture, color: 0xffffff,
+	specular: 0, shininess: 0, emissive: 0, side: THREE.DoubleSide, transparent: true, depthWrite: false, opacity: 3,});
+neptune_rings = new THREE.Mesh(neptune_rings_geo, neptune_rings_mat);
+orbit_neptune_rings = new THREE.Object3D();
+neptune.add(orbit_neptune_rings);
+orbit_neptune_rings.add(neptune_rings);
+neptune.add(neptune_rings);
+
+//****************************
+// Neptune's Moons
+//****************************
+
+// Triton
+triton_geo = new THREE.SphereGeometry(triton_size, 50, 50);
+triton_mat = new THREE.MeshPhongMaterial({map: triton_texture, bumpMap: triton_bump_map, bumpScale: 0.05, 
+	specularMap: triton_spec_map, specular: 0x555555, shininess: 10,});
+triton = new THREE.Mesh(triton_geo, triton_mat);
+orbit_triton = new THREE.Object3D();
+tritons_orbit = new THREE.Object3D();
+orbit_triton.rotation.z = (-23.115/180)*Math.PI; // Orbital Inclination (relative to Neptune's equator)
+orbit_triton.rotation.y = (179/180)*Math.PI; // Right Ascension of Ascending Node
+neptune.add(tritons_orbit);
+tritons_orbit.add(orbit_triton);
+orbit_triton.add(triton);
+
+//***********************************************
+
+// Adding Pluto-Charon center of gravity
+pluto_charon = new THREE.Object3D();
+
+// Adding Pluto to the Solar System (Because why not???)
+pluto_geo = new THREE.SphereGeometry(pluto_size, 50, 50);
+pluto_mat = new THREE.MeshPhongMaterial({map: pluto_texture, bumpMap: pluto_bump_map, bumpScale: 0.05,
+	specularMap: pluto_spec_map, specular: 0x555555, shininess: 5});
+pluto = new THREE.Mesh(pluto_geo, pluto_mat);
+pluto_charon.add(pluto);
+pluto.position.x = pluto_from_barycenter;
+
+// Adding Pluto's atmospheric haze
+pluto_haze = new THREE.SpriteMaterial({map: titan_haze, color: 0x003284, transparent: true, depthWrite: false,
+	blending: THREE.AdditiveBlending,});
+pluto_upper_haze = new THREE.Sprite(pluto_haze);
+pluto_upper_haze.scale.set(2.75*pluto_size, 2.75*pluto_size, 1.0);
+pluto.add(pluto_upper_haze);
+
+// Charon, Pluto's largest moon
+charon_geo = new THREE.SphereGeometry(charon_size, 50, 50);
+charon_mat = new THREE.MeshPhongMaterial({map: charon_texture, bumpMap: charon_bump_map, bumpScale: 0.05,
+	specularMap: charon_spec_map, specular: 0x555555, shininess: 5});
+charon = new THREE.Mesh(charon_geo, charon_mat);
+pluto_charon.add(charon);
+charon.position.x = -charon_from_barycenter;
+
+pluto_path = new THREE.Object3D();
+pluto_path.rotation.z = (17/180)*Math.PI; // Orbital Inclination
+pluto_path.rotation.y = (110/180)*Math.PI; // Right Ascension of Ascending Node
+pluto_path.add(pluto_charon);
+scene.add(pluto_path);
+
+//********************************************************
+
+// Adding Eris to the Solar System
+
+eris_geo = new THREE.SphereGeometry(eris_size, 50, 50);
+eris_mat = new THREE.MeshPhongMaterial({map: eris_texture, shininess: 0});
+eris = new THREE.Mesh(eris_geo, eris_mat);
+eris_path = new THREE.Object3D();
+eris_path.rotation.z = (44.0445/180)*Math.PI; // Orbital Inclination
+eris_path.rotation.y = (36.1/180)*Math.PI; // Right Ascension of Ascending Node
+eris_path.add(eris);
+scene.add(eris_path);
+
+//*******************************************************
+
+// Adding Sedna to the Solar System
+
+sedna_geo = new THREE.SphereGeometry(sedna_size, 50, 50);
+sedna_mat = new THREE.MeshPhongMaterial({map: sedna_texture, shininess: 0});
+sedna = new THREE.Mesh(sedna_geo, sedna_mat);
+sedna_path = new THREE.Object3D();
+sedna_path.rotation.z = (11.92872/180)*Math.PI; // Orbital Inclination
+sedna_path.rotation.y = (144/180)*Math.PI; // Right Ascension of Ascending Node
+sedna_path.add(sedna);
+scene.add(sedna_path);
+
+//*******************************************************
+
+//Adding egg to the solar System
+var points = [];
+for ( var deg = 0; deg <= 180; deg += 6 ) {
+
+    var rad = Math.PI * deg / 180;
+    var point = new THREE.Vector2( egg_size * ( 0.72 + .08 * Math.cos( rad ) ) * Math.sin( rad ), - Math.cos( rad ) * egg_size ); // the "egg equation"
+    //console.log( point ); // x-coord should be greater than zero to avoid degenerate triangles; it is not in this formula.
+    points.push( point );
+
+}
+
+egg_geo = new THREE.LatheBufferGeometry( points, 32 );
+//egg_geo = new THREE.SphereGeometry( egg_size, 50, 50 );
+//egg_geo.applyMatrix(new THREE.Matrix4().makeScale(1.0, 0.93, 1.0)); // Equatorial bulge
+egg_mat = new THREE.MeshBasicMaterial({map: egg_texture});
+egg = new THREE.Mesh(egg_geo, egg_mat);
+egg_path = new THREE.Object3D();
+egg_path.rotation.z = 0; // Orbital Inclination; 0 because egg's orbit represents the ecliptic
+egg_path.rotation.y = (175/180)*Math.PI; // Right Ascension of Ascending Node
+egg_path.add(egg);
+scene.add(egg_path);
+
+//********************************************************
+
+//***********************************************
+
+// Add Lighting to the Solar System
+ambLight = new THREE.AmbientLight(0x282828);
+scene.add(ambLight);
+backAmbLight = new THREE.AmbientLight(0xbebcd6);
+backgroundScene.add(backAmbLight);
+sunlight = new THREE.PointLight(0xffffff, 1, 22000000);
+sunlight.position.set(0,0,0);
+sunlight.castShadow = true;
+
+sunlight.shadow.mapSize.width = 512;
+sunlight.shadow.mapSize.height = 512;
+sunlight.shadow.camera.near = 0.5;
+sunlight.shadow.camera.far = /*600000000*/ 500;
+
+//var helper = new THREE.CameraHelper(sunlight.shadow.camera);
+//var cameraRig = new THREE.Group();
+
+//cameraRig.add(helper);
+//scene.add(cameraRig);
+
+scene.add(sunlight);
+
+//***********************
+// Orbits!!
+//***********************
+
+// Mercury's Orbit
+mercury_ellipse_mat = new THREE.LineBasicMaterial({color: 0xd3d3d3,});
+mercury_ellipse = new THREE.EllipseCurve(mercury_eccentricity, 0, mercury_distance,
+	(mercury_distance - 0.5*mercury_eccentricity), 0, 2.0 * Math.PI, false);
+mercury_points = mercury_ellipse.getPoints(1000);
+mercury_ellipse_geo = new THREE.Geometry().setFromPoints(mercury_points);
+mercury_line = new THREE.Line(mercury_ellipse_geo, mercury_ellipse_mat);
+mercury_line.rotation.x = (90/180)*Math.PI;
+mercury_path.add(mercury_line);
+
+// Venus's Orbit
+venus_ellipse_mat = new THREE.LineBasicMaterial({color: 0xffa500,});
+venus_ellipse = new THREE.EllipseCurve(venus_eccentricity, 0, venus_distance,
+        (venus_distance - 0.5*venus_eccentricity), 0, 2.0 * Math.PI, false);
+venus_points = venus_ellipse.getPoints(1000);
+venus_ellipse_geo = new THREE.Geometry().setFromPoints(venus_points);
+venus_line = new THREE.Line(venus_ellipse_geo, venus_ellipse_mat);
+venus_line.rotation.x = (90/180)*Math.PI;
+venus_path.add(venus_line);
+
+// Earth's Orbit
+earth_ellipse_mat = new THREE.LineBasicMaterial({color: 0x00bfff,});
+earth_ellipse = new THREE.EllipseCurve(earth_eccentricity, 0, earth_distance,
+        (earth_distance - 0.5*earth_eccentricity), 0, 2.0 * Math.PI, false);
+earth_points = earth_ellipse.getPoints(1000);
+earth_ellipse_geo = new THREE.Geometry().setFromPoints(earth_points);
+earth_line = new THREE.Line(earth_ellipse_geo, earth_ellipse_mat);
+earth_line.rotation.x = (90/180)*Math.PI;
+earth_path.add(earth_line);
+
+// Moon's Orbit
+moon_ellipse_mat = new THREE.LineBasicMaterial({color: 0x555555,});
+moon_ellipse = new THREE.EllipseCurve(moon_eccentricity, 0, moon_distance,
+         (moon_distance - 0.5*moon_eccentricity), 0, 2.0 * Math.PI, false);
+moon_points = moon_ellipse.getPoints(1000);
+moon_ellipse_geo = new THREE.Geometry().setFromPoints(moon_points);
+moon_line = new THREE.Line(moon_ellipse_geo, moon_ellipse_mat);
+moon_line.rotation.x = (90/180)*Math.PI;
+orbit_moon.add(moon_line);
+
+// io's Orbit
+io_ellipse_mat = new THREE.LineBasicMaterial({color: 0x756f32,});
+io_ellipse = new THREE.EllipseCurve(io_eccentricity, 0, io_distance,
+         (io_distance - 0.5*io_eccentricity), 0, 2.0 * Math.PI, false);
+io_points = io_ellipse.getPoints(1000);
+io_ellipse_geo = new THREE.Geometry().setFromPoints(io_points);
+io_line = new THREE.Line(io_ellipse_geo, io_ellipse_mat);
+io_line.rotation.x = (90/180)*Math.PI;
+orbit_io.add(io_line);
+
+// europa's Orbit
+europa_ellipse_mat = new THREE.LineBasicMaterial({color: 0x9c769e,});
+europa_ellipse = new THREE.EllipseCurve(europa_eccentricity, 0, europa_distance,
+         (europa_distance - 0.5*europa_eccentricity), 0, 2.0 * Math.PI, false);
+europa_points = europa_ellipse.getPoints(1000);
+europa_ellipse_geo = new THREE.Geometry().setFromPoints(europa_points);
+europa_line = new THREE.Line(europa_ellipse_geo, europa_ellipse_mat);
+europa_line.rotation.x = (90/180)*Math.PI;
+orbit_europa.add(europa_line);
+
+// ganymede's Orbit
+ganymede_ellipse_mat = new THREE.LineBasicMaterial({color: 0x63709b,});
+ganymede_ellipse = new THREE.EllipseCurve(ganymede_eccentricity, 0, ganymede_distance,
+         (ganymede_distance - 0.5*ganymede_eccentricity), 0, 2.0 * Math.PI, false);
+ganymede_points = ganymede_ellipse.getPoints(1000);
+ganymede_ellipse_geo = new THREE.Geometry().setFromPoints(ganymede_points);
+ganymede_line = new THREE.Line(ganymede_ellipse_geo, ganymede_ellipse_mat);
+ganymede_line.rotation.x = (90/180)*Math.PI;
+orbit_ganymede.add(ganymede_line);
+
+// callisto's Orbit
+callisto_ellipse_mat = new THREE.LineBasicMaterial({color: 0x6d3a3a,});
+callisto_ellipse = new THREE.EllipseCurve(callisto_eccentricity, 0, callisto_distance,
+         (callisto_distance - 0.5*callisto_eccentricity), 0, 2.0 * Math.PI, false);
+callisto_points = callisto_ellipse.getPoints(1000);
+callisto_ellipse_geo = new THREE.Geometry().setFromPoints(callisto_points);
+callisto_line = new THREE.Line(callisto_ellipse_geo, callisto_ellipse_mat);
+callisto_line.rotation.x = (90/180)*Math.PI;
+orbit_callisto.add(callisto_line);
+
+// mimas's Orbit
+mimas_ellipse_mat = new THREE.LineBasicMaterial({color: 0x708396,});
+mimas_ellipse = new THREE.EllipseCurve(mimas_eccentricity, 0, mimas_distance,
+         (mimas_distance - 0.5*mimas_eccentricity), 0, 2.0 * Math.PI, false);
+mimas_points = mimas_ellipse.getPoints(1000);
+mimas_ellipse_geo = new THREE.Geometry().setFromPoints(mimas_points);
+mimas_line = new THREE.Line(mimas_ellipse_geo, mimas_ellipse_mat);
+mimas_line.rotation.x = (90/180)*Math.PI;
+orbit_mimas.add(mimas_line);
+
+// enceladus's Orbit
+enceladus_ellipse_mat = new THREE.LineBasicMaterial({color: 0xa8d3ff,});
+enceladus_ellipse = new THREE.EllipseCurve(enceladus_eccentricity, 0, enceladus_distance,
+         (enceladus_distance - 0.5*enceladus_eccentricity), 0, 2.0 * Math.PI, false);
+enceladus_points = enceladus_ellipse.getPoints(1000);
+enceladus_ellipse_geo = new THREE.Geometry().setFromPoints(enceladus_points);
+enceladus_line = new THREE.Line(enceladus_ellipse_geo, enceladus_ellipse_mat);
+enceladus_line.rotation.x = (90/180)*Math.PI;
+orbit_enceladus.add(enceladus_line);
+
+// tethys's Orbit
+tethys_ellipse_mat = new THREE.LineBasicMaterial({color: 0x8cad9f,});
+tethys_ellipse = new THREE.EllipseCurve(tethys_eccentricity, 0, tethys_distance,
+         (tethys_distance - 0.5*tethys_eccentricity), 0, 2.0 * Math.PI, false);
+tethys_points = tethys_ellipse.getPoints(1000);
+tethys_ellipse_geo = new THREE.Geometry().setFromPoints(tethys_points);
+tethys_line = new THREE.Line(tethys_ellipse_geo, tethys_ellipse_mat);
+tethys_line.rotation.x = (90/180)*Math.PI;
+orbit_tethys.add(tethys_line);
+
+// dione's Orbit
+dione_ellipse_mat = new THREE.LineBasicMaterial({color: 0x5f7f64,});
+dione_ellipse = new THREE.EllipseCurve(dione_eccentricity, 0, dione_distance,
+         (dione_distance - 0.5*dione_eccentricity), 0, 2.0 * Math.PI, false);
+dione_points = dione_ellipse.getPoints(1000);
+dione_ellipse_geo = new THREE.Geometry().setFromPoints(dione_points);
+dione_line = new THREE.Line(dione_ellipse_geo, dione_ellipse_mat);
+dione_line.rotation.x = (90/180)*Math.PI;
+orbit_dione.add(dione_line);
+
+// rhea's Orbit
+rhea_ellipse_mat = new THREE.LineBasicMaterial({color: 0x586696,});
+rhea_ellipse = new THREE.EllipseCurve(rhea_eccentricity, 0, rhea_distance,
+         (rhea_distance - 0.5*rhea_eccentricity), 0, 2.0 * Math.PI, false);
+rhea_points = rhea_ellipse.getPoints(1000);
+rhea_ellipse_geo = new THREE.Geometry().setFromPoints(rhea_points);
+rhea_line = new THREE.Line(rhea_ellipse_geo, rhea_ellipse_mat);
+rhea_line.rotation.x = (90/180)*Math.PI;
+orbit_rhea.add(rhea_line);
+
+// titan's Orbit
+titan_ellipse_mat = new THREE.LineBasicMaterial({color: 0xbf3900,});
+titan_ellipse = new THREE.EllipseCurve(titan_eccentricity, 0, titan_distance,
+         (titan_distance - 0.5*titan_eccentricity), 0, 2.0 * Math.PI, false);
+titan_points = titan_ellipse.getPoints(1000);
+titan_ellipse_geo = new THREE.Geometry().setFromPoints(titan_points);
+titan_line = new THREE.Line(titan_ellipse_geo, titan_ellipse_mat);
+titan_line.rotation.x = (90/180)*Math.PI;
+orbit_titan.add(titan_line);
+
+// iapetus's Orbit
+iapetus_ellipse_mat = new THREE.LineBasicMaterial({color: 0x51487c,});
+iapetus_ellipse = new THREE.EllipseCurve(iapetus_eccentricity, 0, iapetus_distance,
+         (iapetus_distance - 0.5*iapetus_eccentricity), 0, 2.0 * Math.PI, false);
+iapetus_points = iapetus_ellipse.getPoints(1000);
+iapetus_ellipse_geo = new THREE.Geometry().setFromPoints(iapetus_points);
+iapetus_line = new THREE.Line(iapetus_ellipse_geo, iapetus_ellipse_mat);
+iapetus_line.rotation.x = (90/180)*Math.PI;
+orbit_iapetus.add(iapetus_line);
+
+// miranda's Orbit
+miranda_ellipse_mat = new THREE.LineBasicMaterial({color: 0x597253,});
+miranda_ellipse = new THREE.EllipseCurve(miranda_eccentricity, 0, miranda_distance,
+         (miranda_distance - 0.5*miranda_eccentricity), 0, 2.0 * Math.PI, false);
+miranda_points = miranda_ellipse.getPoints(1000);
+miranda_ellipse_geo = new THREE.Geometry().setFromPoints(miranda_points);
+miranda_line = new THREE.Line(miranda_ellipse_geo, miranda_ellipse_mat);
+miranda_line.rotation.x = (90/180)*Math.PI;
+orbit_miranda.add(miranda_line);
+
+// ariel's Orbit
+ariel_ellipse_mat = new THREE.LineBasicMaterial({color: 0x535b72,});
+ariel_ellipse = new THREE.EllipseCurve(ariel_eccentricity, 0, ariel_distance,
+         (ariel_distance - 0.5*ariel_eccentricity), 0, 2.0 * Math.PI, false);
+ariel_points = ariel_ellipse.getPoints(1000);
+ariel_ellipse_geo = new THREE.Geometry().setFromPoints(ariel_points);
+ariel_line = new THREE.Line(ariel_ellipse_geo, ariel_ellipse_mat);
+ariel_line.rotation.x = (90/180)*Math.PI;
+orbit_ariel.add(ariel_line);
+
+// umbriel's Orbit
+umbriel_ellipse_mat = new THREE.LineBasicMaterial({color: 0x5d8280,});
+umbriel_ellipse = new THREE.EllipseCurve(umbriel_eccentricity, 0, umbriel_distance,
+         (umbriel_distance - 0.5*umbriel_eccentricity), 0, 2.0 * Math.PI, false);
+umbriel_points = umbriel_ellipse.getPoints(1000);
+umbriel_ellipse_geo = new THREE.Geometry().setFromPoints(umbriel_points);
+umbriel_line = new THREE.Line(umbriel_ellipse_geo, umbriel_ellipse_mat);
+umbriel_line.rotation.x = (90/180)*Math.PI;
+orbit_umbriel.add(umbriel_line);
+
+// titania's Orbit
+titania_ellipse_mat = new THREE.LineBasicMaterial({color: 0x2f8e8a,});
+titania_ellipse = new THREE.EllipseCurve(titania_eccentricity, 0, titania_distance,
+         (titania_distance - 0.5*titania_eccentricity), 0, 2.0 * Math.PI, false);
+titania_points = titania_ellipse.getPoints(1000);
+titania_ellipse_geo = new THREE.Geometry().setFromPoints(titania_points);
+titania_line = new THREE.Line(titania_ellipse_geo, titania_ellipse_mat);
+titania_line.rotation.x = (90/180)*Math.PI;
+orbit_titania.add(titania_line);
+
+// oberon's Orbit
+oberon_ellipse_mat = new THREE.LineBasicMaterial({color: 0x2c8c44,});
+oberon_ellipse = new THREE.EllipseCurve(oberon_eccentricity, 0, oberon_distance,
+         (oberon_distance - 0.5*oberon_eccentricity), 0, 2.0 * Math.PI, false);
+oberon_points = oberon_ellipse.getPoints(1000);
+oberon_ellipse_geo = new THREE.Geometry().setFromPoints(oberon_points);
+oberon_line = new THREE.Line(oberon_ellipse_geo, oberon_ellipse_mat);
+oberon_line.rotation.x = (90/180)*Math.PI;
+orbit_oberon.add(oberon_line);
+
+// triton's Orbit
+triton_ellipse_mat = new THREE.LineBasicMaterial({color: 0x4a2982,});
+triton_ellipse = new THREE.EllipseCurve(triton_eccentricity, 0, triton_distance,
+         (triton_distance - 0.5*triton_eccentricity), 0, 2.0 * Math.PI, false);
+triton_points = triton_ellipse.getPoints(1000);
+triton_ellipse_geo = new THREE.Geometry().setFromPoints(triton_points);
+triton_line = new THREE.Line(triton_ellipse_geo, triton_ellipse_mat);
+triton_line.rotation.x = (90/180)*Math.PI;
+orbit_triton.add(triton_line);
+
+// Mars's Orbit
+mars_ellipse_mat = new THREE.LineBasicMaterial({color: 0xff0000,});
+mars_ellipse = new THREE.EllipseCurve(mars_eccentricity, 0, mars_distance,
+        (mars_distance - 0.5*mars_eccentricity), 0, 2.0 * Math.PI, false);
+mars_points = mars_ellipse.getPoints(1000);
+mars_ellipse_geo = new THREE.Geometry().setFromPoints(mars_points);
+mars_line = new THREE.Line(mars_ellipse_geo, mars_ellipse_mat);
+mars_line.rotation.x = (90/180)*Math.PI;
+mars_path.add(mars_line);
+
+// Ceres's Orbit
+ceres_ellipse_mat = new THREE.LineBasicMaterial({color: 0x555555,});
+ceres_ellipse = new THREE.EllipseCurve(ceres_eccentricity, 0, ceres_distance,
+	(ceres_distance -0.5*ceres_eccentricity), 0, 2.0 * Math.PI, false);
+ceres_points = ceres_ellipse.getPoints(1000);
+ceres_ellipse_geo = new THREE.Geometry().setFromPoints(ceres_points);
+ceres_line = new THREE.Line(ceres_ellipse_geo, ceres_ellipse_mat);
+ceres_line.rotation.x = (90/180)*Math.PI;
+ceres_path.add(ceres_line);
+
+// Jupiter's Orbit
+jupiter_ellipse_mat = new THREE.LineBasicMaterial({color: 0xffb6c1,});
+jupiter_ellipse = new THREE.EllipseCurve(jupiter_eccentricity, 0, jupiter_distance,
+        (jupiter_distance - 0.5*jupiter_eccentricity), 0, 2.0 * Math.PI, false);
+jupiter_points = jupiter_ellipse.getPoints(1000);
+jupiter_ellipse_geo = new THREE.Geometry().setFromPoints(jupiter_points);
+jupiter_line = new THREE.Line(jupiter_ellipse_geo, jupiter_ellipse_mat);
+jupiter_line.rotation.x = (90/180)*Math.PI;
+jupiter_path.add(jupiter_line);
+
+// Saturn's Orbit
+saturn_ellipse_mat = new THREE.LineBasicMaterial({color: 0xdaa520,});
+saturn_ellipse = new THREE.EllipseCurve(saturn_eccentricity, 0, saturn_distance,
+        (saturn_distance - 0.5*saturn_eccentricity), 0, 2.0 * Math.PI, false);
+saturn_points = saturn_ellipse.getPoints(1000);
+saturn_ellipse_geo = new THREE.Geometry().setFromPoints(saturn_points);
+saturn_line = new THREE.Line(saturn_ellipse_geo, saturn_ellipse_mat);
+saturn_line.rotation.x = (90/180)*Math.PI;
+saturn_path.add(saturn_line);
+
+// Uranus's Orbit
+uranus_ellipse_mat = new THREE.LineBasicMaterial({color: 0x00ffff,});
+uranus_ellipse = new THREE.EllipseCurve(uranus_eccentricity, 0, uranus_distance,
+        (uranus_distance - 0.5*uranus_eccentricity), 0, 2.0 * Math.PI, false);
+uranus_points = uranus_ellipse.getPoints(1000);
+uranus_ellipse_geo = new THREE.Geometry().setFromPoints(uranus_points);
+uranus_line = new THREE.Line(uranus_ellipse_geo, uranus_ellipse_mat);
+uranus_line.rotation.x = (90/180)*Math.PI;
+uranus_path.add(uranus_line);
+
+// Neptune's Orbit
+neptune_ellipse_mat = new THREE.LineBasicMaterial({color: 0x0000ff,});
+neptune_ellipse = new THREE.EllipseCurve(neptune_eccentricity, 0, neptune_distance,
+        (neptune_distance - 0.5*neptune_eccentricity), 0, 2.0 * Math.PI, false);
+neptune_points = neptune_ellipse.getPoints(1000);
+neptune_ellipse_geo = new THREE.Geometry().setFromPoints(neptune_points);
+neptune_line = new THREE.Line(neptune_ellipse_geo, neptune_ellipse_mat);
+neptune_line.rotation.x = (90/180)*Math.PI;
+neptune_path.add(neptune_line);
+
+// Pluto's Orbit
+pluto_ellipse_mat = new THREE.LineBasicMaterial({color: 0xbc8f8f,});
+pluto_ellipse = new THREE.EllipseCurve(pluto_eccentricity, 0, pluto_distance,
+        (pluto_distance - 0.5*pluto_eccentricity), 0, 2.0 * Math.PI, false);
+pluto_points = pluto_ellipse.getPoints(1000);
+pluto_ellipse_geo = new THREE.Geometry().setFromPoints(pluto_points);
+pluto_line = new THREE.Line(pluto_ellipse_geo, pluto_ellipse_mat);
+pluto_line.rotation.x = (90/180)*Math.PI;
+pluto_path.add(pluto_line);
+
+// Eris's Orbit
+eris_ellipse_mat = new THREE.LineBasicMaterial({color: 0x3b5277,});
+eris_ellipse = new THREE.EllipseCurve(eris_eccentricity, 0, eris_distance,
+        (eris_distance - 0.5*eris_eccentricity), 0, 2.0 * Math.PI, false);
+eris_points = eris_ellipse.getPoints(1000);
+eris_ellipse_geo = new THREE.Geometry().setFromPoints(eris_points);
+eris_line = new THREE.Line(eris_ellipse_geo, eris_ellipse_mat);
+eris_line.rotation.x = (90/180)*Math.PI;
+eris_path.add(eris_line);
+
+// Sedna's Orbit
+sedna_ellipse_mat = new THREE.LineBasicMaterial({color: 0x911f4b,});
+sedna_ellipse = new THREE.EllipseCurve(sedna_eccentricity, 0, sedna_distance,
+        (sedna_distance - 0.5*sedna_eccentricity), 0, 2.0 * Math.PI, false);
+sedna_points = sedna_ellipse.getPoints(1000);
+sedna_ellipse_geo = new THREE.Geometry().setFromPoints(sedna_points);
+sedna_line = new THREE.Line(sedna_ellipse_geo, sedna_ellipse_mat);
+sedna_line.rotation.x = (90/180)*Math.PI;
+sedna_path.add(sedna_line);
+
+//Egg's Orbit
+egg_ellipse_mat = new THREE.LineBasicMaterial({color: 0x00bf9f,});
+egg_ellipse = new THREE.EllipseCurve(egg_eccentricity, 0, egg_distance,
+        (egg_distance - 0.5*egg_eccentricity), 0, 2.0 * Math.PI, false);
+egg_points = egg_ellipse.getPoints(1000);
+egg_ellipse_geo = new THREE.Geometry().setFromPoints(egg_points);
+egg_line = new THREE.Line(egg_ellipse_geo, egg_ellipse_mat);
+egg_line.rotation.x = (90/180)*Math.PI;
+egg_path.add(egg_line);
+
+//**************************************************
+
+// Set a toggle for the camera
+// By default, the camera is pointed at the Sun
+
+sun_camera = new THREE.Object3D(); sun.add(sun_camera);
+mercury_camera = new THREE.Object3D(); mercury.add(mercury_camera);
+venus_camera = new THREE.Object3D(); venus.add(venus_camera);
+earth_camera = new THREE.Object3D(); earth.add(earth_camera);
+moon_camera = new THREE.Object3D(); moon.add(moon_camera);
+mars_camera = new THREE.Object3D(); mars.add(mars_camera);
+ceres_camera = new THREE.Object3D(); ceres.add(ceres_camera);
+jupiter_camera = new THREE.Object3D(); jupiter.add(jupiter_camera);
+io_camera = new THREE.Object3D(); io.add(io_camera);
+europa_camera = new THREE.Object3D(); europa.add(europa_camera);
+ganymede_camera = new THREE.Object3D(); ganymede.add(ganymede_camera);
+callisto_camera = new THREE.Object3D(); callisto.add(callisto_camera);
+saturn_camera = new THREE.Object3D(); saturn.add(saturn_camera);
+mimas_camera = new THREE.Object3D(); mimas.add(mimas_camera);
+enceladus_camera = new THREE.Object3D(); enceladus.add(enceladus_camera);
+tethys_camera = new THREE.Object3D(); tethys.add(tethys_camera);
+dione_camera = new THREE.Object3D(); dione.add(dione_camera);
+rhea_camera = new THREE.Object3D(); rhea.add(rhea_camera);
+titan_camera = new THREE.Object3D(); titan.add(titan_camera);
+iapetus_camera = new THREE.Object3D(); iapetus.add(iapetus_camera);
+uranus_camera = new THREE.Object3D(); uranus.add(uranus_camera);
+miranda_camera = new THREE.Object3D(); miranda.add(miranda_camera);
+ariel_camera = new THREE.Object3D(); ariel.add(ariel_camera);
+umbriel_camera = new THREE.Object3D(); umbriel.add(umbriel_camera);
+titania_camera = new THREE.Object3D(); titania.add(titania_camera);
+oberon_camera = new THREE.Object3D(); oberon.add(oberon_camera);
+neptune_camera = new THREE.Object3D(); neptune.add(neptune_camera);
+triton_camera = new THREE.Object3D(); triton.add(triton_camera);
+pluto_camera = new THREE.Object3D(); pluto_charon.add(pluto_camera);
+eris_camera = new THREE.Object3D(); eris.add(eris_camera);
+sedna_camera = new THREE.Object3D(); sedna.add(sedna_camera);
+egg_camera = new THREE.Object3D(); egg.add(egg_camera);
+
+view_gui = new dat.GUI();
+look_At_Moon = {Moon: function() {moon_camera.add(camera); camera.position.z = earth_distance/17000.0; camera.lookAt(moon.position);}}
+look_At_Io = {Io: function() {io_camera.add(camera); camera.position.z = earth_distance/17000.0; camera.lookAt(io.position);}}
+look_At_Europa = {Europa: function() {europa_camera.add(camera); camera.position.z = earth_distance/17000.0; camera.lookAt(europa.position);}}
+look_At_Ganymede = {Ganymede: function() {ganymede_camera.add(camera); camera.position.z = earth_distance/17000.0; camera.lookAt(ganymede.position);}}
+look_At_Callisto = {Callisto: function() {callisto_camera.add(camera); camera.position.z = earth_distance/17000.0; camera.lookAt(callisto.position);}}
+look_At_Mimas = {Mimas: function() {mimas_camera.add(camera); camera.position.z = earth_distance/35000.0; camera.lookAt(mimas.position);}}
+look_At_Enceladus = {Enceladus: function() {enceladus_camera.add(camera); camera.position.z = earth_distance/27000.0; camera.lookAt(enceladus.position);}}
+look_At_Tethys = {Tethys: function() {tethys_camera.add(camera); camera.position.z = earth_distance/17000.0; camera.lookAt(tethys.position);}}
+look_At_Dione = {Dione: function() {dione_camera.add(camera); camera.position.z = earth_distance/17000.0; camera.lookAt(dione.position);}}
+look_At_Rhea = {Rhea: function() {rhea_camera.add(camera); camera.position.z = earth_distance/17000.0;camera.lookAt(rhea.position);}}
+look_At_Titan = {Titan: function() {titan_camera.add(camera);  camera.position.z = earth_distance/17000.0; camera.lookAt(titan.position);}}
+look_At_Iapetus = {Iapetus: function() {iapetus_camera.add(camera); camera.position.z = earth_distance/20000.0; camera.lookAt(iapetus.position);}}
+look_At_Miranda = {Miranda: function() {miranda_camera.add(camera); camera.position.z = earth_distance/32000.0; camera.lookAt(miranda.position);}}
+look_At_Ariel = {Ariel: function() {ariel_camera.add(camera); camera.position.z = earth_distance/17000.0; camera.lookAt(ariel.position);}}
+look_At_Umbriel = {Umbriel: function() {umbriel_camera.add(camera); camera.position.z = earth_distance/17000.0; camera.lookAt(umbriel.position);}}
+look_At_Titania = {Titania: function() {titania_camera.add(camera); camera.position.z = earth_distance/17000.0; camera.lookAt(titania.position);}}
+look_At_Oberon = {Oberon: function() {oberon_camera.add(camera); camera.position.z = earth_distance/20000.0; camera.lookAt(oberon.position);}}
+look_At_Triton = {Triton: function() {triton_camera.add(camera); camera.position.z = earth_distance/17000.0; camera.lookAt(triton.position);}}
+
+look_At_Sun = {Sun: function() {sun_camera.add(camera); camera.position.z = earth_distance/5.0; camera.lookAt(sun.position);}}
+look_At_Mercury = {Mercury: function() {mercury_camera.add(camera); camera.position.z = earth_distance/17000.0; camera.lookAt(mercury.position);}}
+look_At_Venus = {Venus: function() {venus_camera.add(camera); camera.position.z = earth_distance/7000.0; camera.lookAt(venus.position);}}
+look_At_Earth = {Earth: function() {earth_camera.add(camera); camera.position.z = earth_distance/6500.0; camera.lookAt(earth.position);}}
+look_At_Mars = {Mars: function() {mars_camera.add(camera); camera.position.z = earth_distance/12000.0; camera.lookAt(mars.position);}}
+look_At_Ceres = {Ceres: function() {ceres_camera.add(camera); camera.position.z = earth_distance/27000.0; camera.lookAt(ceres.position);}}
+look_At_Jupiter = {Jupiter: function() {jupiter_camera.add(camera); camera.position.z = earth_distance/500.0; camera.lookAt(jupiter.position);}}
+look_At_Saturn = {Saturn: function() {saturn_camera.add(camera); camera.position.z = earth_distance/500.0; camera.lookAt(saturn.position);}}
+look_At_Uranus = {Uranus: function() {uranus_camera.add(camera); camera.position.z = earth_distance/17000.0; camera.lookAt(uranus.position);}}
+look_At_Neptune = {Neptune: function() {neptune_camera.add(camera); camera.position.z = earth_distance/17000.0; camera.lookAt(neptune.position);}}
+look_At_Pluto = {Pluto: function() {pluto_camera.add(camera); camera.position.z = earth_distance/11000.0; camera.lookAt(pluto_charon.position);}}
+look_At_Eris = {Eris: function() {eris_camera.add(camera); camera.position.z = earth_distance/11000.0; camera.lookAt(eris.position);}}
+look_At_Sedna = {Sedna: function() {sedna_camera.add(camera); camera.position.z = earth_distance/11000.0; camera.lookAt(sedna.position);}}
+look_At_Egg = {Egg: function() {egg_camera.add(camera); camera.position.z = earth_distance/6500.0; camera.lookAt(egg.position);}}
+
+var planets = view_gui.addFolder('Sun and Planets');
+planets.add(look_At_Sun, 'Sun');
+planets.add(look_At_Mercury, 'Mercury');
+planets.add(look_At_Venus, 'Venus');
+planets.add(look_At_Earth, 'Earth');
+planets.add(look_At_Mars, 'Mars');
+planets.add(look_At_Jupiter, 'Jupiter');
+planets.add(look_At_Saturn, 'Saturn');
+planets.add(look_At_Uranus, 'Uranus');
+planets.add(look_At_Neptune, 'Neptune');
+
+var dwarf_planets = view_gui.addFolder('Dwarf Planets');
+dwarf_planets.add(look_At_Ceres, 'Ceres');
+dwarf_planets.add(look_At_Pluto, 'Pluto');
+dwarf_planets.add(look_At_Eris, 'Eris');
+dwarf_planets.add(look_At_Sedna, 'Sedna');
+
+var moons = view_gui.addFolder('Moons');
+moons.add(look_At_Moon, 'Moon');
+moons.add(look_At_Io, 'Io');
+moons.add(look_At_Europa, 'Europa');
+moons.add(look_At_Ganymede, 'Ganymede');
+moons.add(look_At_Callisto, 'Callisto');
+moons.add(look_At_Mimas, 'Mimas');
+moons.add(look_At_Enceladus, 'Enceladus');
+moons.add(look_At_Tethys, 'Tethys');
+moons.add(look_At_Dione, 'Dione');
+moons.add(look_At_Rhea, 'Rhea');
+moons.add(look_At_Titan, 'Titan');
+moons.add(look_At_Iapetus, 'Iapetus');
+moons.add(look_At_Miranda, 'Miranda');
+moons.add(look_At_Ariel, 'Ariel');
+moons.add(look_At_Umbriel, 'Umbriel');
+moons.add(look_At_Titania, 'Titania');
+moons.add(look_At_Oberon, 'Oberon');
+moons.add(look_At_Triton, 'Triton');
+
+view_gui.add(look_At_Egg, 'Egg');
+
+// Set a toggle switch for the orbits
+// By default, the orbits of the planets are not visible.
+
+mercury_line.visible = false;
+venus_line.visible = false;
+earth_line.visible = false;
+moon_line.visible = false;
+mars_line.visible = false;
+ceres_line.visible = false;
+jupiter_line.visible = false;
+io_line.visible = false;
+europa_line.visible = false;
+ganymede_line.visible = false;
+callisto_line.visible = false;
+saturn_line.visible = false;
+mimas_line.visible = false;
+enceladus_line.visible = false;
+tethys_line.visible = false;
+dione_line.visible = false;
+rhea_line.visible = false;
+titan_line.visible = false;
+iapetus_line.visible = false;
+uranus_line.visible = false;
+miranda_line.visible = false;
+ariel_line.visible = false;
+umbriel_line.visible = false;
+titania_line.visible = false;
+oberon_line.visible = false;
+neptune_line.visible = false;
+triton_line.visible = false;
+pluto_line.visible = false;
+eris_line.visible = false;
+sedna_line.visible = false;
+egg_line.visible = false;
+
+control_gui = new dat.GUI();
+orbits_off = {
+	OFF: function() {
+		mercury_line.traverse(function() {mercury_line.visible = false;});
+		venus_line.traverse(function() {venus_line.visible = false;});
+		earth_line.traverse(function() {earth_line.visible = false;});
+		mars_line.traverse(function() {mars_line.visible = false;});
+		jupiter_line.traverse(function() {jupiter_line.visible = false;});
+		saturn_line.traverse(function() {saturn_line.visible = false;});
+		uranus_line.traverse(function() {uranus_line.visible = false;});
+		neptune_line.traverse(function() {neptune_line.visible = false;});
+	}
+}
+orbits_on = {
+	ON: function() {
+		mercury_line.traverse(function() {mercury_line.visible = true;});
+                venus_line.traverse(function() {venus_line.visible = true;});
+                earth_line.traverse(function() {earth_line.visible = true;});
+                mars_line.traverse(function() {mars_line.visible = true;});
+                jupiter_line.traverse(function() {jupiter_line.visible = true;});
+                saturn_line.traverse(function() {saturn_line.visible = true;});
+                uranus_line.traverse(function() {uranus_line.visible = true;});
+                neptune_line.traverse(function() {neptune_line.visible = true;});
+	}
+}
+
+dwarf_orbits_off = {
+	OFF: function() {
+		ceres_line.traverse(function() {ceres_line.visible = false;});
+		pluto_line.traverse(function() {pluto_line.visible = false;});
+		eris_line.traverse(function() {eris_line.visible = false;});
+		sedna_line.traverse(function() {sedna_line.visible = false;});
+	}
+}
+
+dwarf_orbits_on = {
+	ON: function() {
+		ceres_line.traverse(function() {ceres_line.visible = true;});
+                pluto_line.traverse(function() {pluto_line.visible = true;});
+                eris_line.traverse(function() {eris_line.visible = true;});
+                sedna_line.traverse(function() {sedna_line.visible = true;});
+	}
+}
+
+moon_orbits_off = {
+	OFF: function() {
+		moon_line.traverse(function() {moon_line.visible = false;});
+		io_line.traverse(function() {io_line.visible = false;});
+                europa_line.traverse(function() {europa_line.visible = false;});
+                ganymede_line.traverse(function() {ganymede_line.visible = false;});
+                callisto_line.traverse(function() {callisto_line.visible = false;});
+		mimas_line.traverse(function() {mimas_line.visible = false;});
+                enceladus_line.traverse(function() {enceladus_line.visible = false;});
+                tethys_line.traverse(function() {tethys_line.visible = false;});
+                dione_line.traverse(function() {dione_line.visible = false;});
+                rhea_line.traverse(function() {rhea_line.visible = false;});
+                titan_line.traverse(function() {titan_line.visible = false;});
+                iapetus_line.traverse(function() {iapetus_line.visible = false;});
+		miranda_line.traverse(function() {miranda_line.visible = false;});
+                ariel_line.traverse(function() {ariel_line.visible = false;});
+                umbriel_line.traverse(function() {umbriel_line.visible = false;});
+                titania_line.traverse(function() {titania_line.visible = false;});
+                oberon_line.traverse(function() {oberon_line.visible = false;});
+		triton_line.traverse(function() {triton_line.visible = false;});
+	}
+}
+
+moon_orbits_on = {
+        ON: function() {
+                moon_line.traverse(function() {moon_line.visible = true;});
+                io_line.traverse(function() {io_line.visible = true;});
+                europa_line.traverse(function() {europa_line.visible = true;});
+                ganymede_line.traverse(function() {ganymede_line.visible = true;});
+                callisto_line.traverse(function() {callisto_line.visible = true;});
+                mimas_line.traverse(function() {mimas_line.visible = true;});
+                enceladus_line.traverse(function() {enceladus_line.visible = true;});
+                tethys_line.traverse(function() {tethys_line.visible = true;});
+                dione_line.traverse(function() {dione_line.visible = true;});
+                rhea_line.traverse(function() {rhea_line.visible = true;});
+                titan_line.traverse(function() {titan_line.visible = true;});
+                iapetus_line.traverse(function() {iapetus_line.visible = true;});
+                miranda_line.traverse(function() {miranda_line.visible = true;});
+                ariel_line.traverse(function() {ariel_line.visible = true;});
+                umbriel_line.traverse(function() {umbriel_line.visible = true;});
+                titania_line.traverse(function() {titania_line.visible = true;});
+                oberon_line.traverse(function() {oberon_line.visible = true;});
+                triton_line.traverse(function() {triton_line.visible = true;});
+        }
+}
+
+var orbits = control_gui.addFolder('Planet Orbits');
+orbits.add(orbits_on, 'ON');
+orbits.add(orbits_off, 'OFF');
+
+var dwarf_orbits = control_gui.addFolder('Dwarf Planet Orbits');
+dwarf_orbits.add(dwarf_orbits_on, 'ON');
+dwarf_orbits.add(dwarf_orbits_off, 'OFF');
+
+var moon_orbits = control_gui.addFolder('Moon Orbits');
+moon_orbits.add(moon_orbits_on, 'ON');
+moon_orbits.add(moon_orbits_off, 'OFF');
+
+// Set a toggle for clouds and atmospheres
+// By default, the clouds and atmospheres of the planets are visible.
+
+venus_clouds.visible = true;
+earth_clouds.visible = true;
+mars_clouds.visible = true;
+titan_clouds.visible = true;
+
+//cloud_gui = new dat.GUI();
+atmospheres_off = {
+	OFF: function() {
+		venus_clouds.traverse(function() {venus_clouds.visible = false;});
+		earth_clouds.traverse(function() {earth_clouds.visible = false;});
+		mars_clouds.traverse(function() {mars_clouds.visible = false;});
+		titan_clouds.traverse(function() {titan_clouds.visible = false;});
+	}
+}
+atmospheres_on = {
+	ON: function() {
+		venus_clouds.traverse(function() {venus_clouds.visible = true;});
+                earth_clouds.traverse(function() {earth_clouds.visible = true;});
+                mars_clouds.traverse(function() {mars_clouds.visible = true;});
+		titan_clouds.traverse(function() {titan_clouds.visible = true;});
+	}
+}
+var atmospheres = control_gui.addFolder('Atmospheres');
+atmospheres.add(atmospheres_on, 'ON');
+atmospheres.add(atmospheres_off, 'OFF');
+
+//*******************************************************************
+
+function rotatePlanets() {
+	
+	// Set rotation obliquities(tilts) for the Sun and Planets.
+	sun.rotation.x = (7.25/180)*Math.PI;
+	mercury.rotation.x = (0.03/180)*Math.PI;
+	venus.rotation.x = (2.64/180)*Math.PI;
+	earth.rotation.x = (23.45/180)*Math.PI;
+	mars.rotation.x = (25.19/180)*Math.PI;
+	ceres.rotation.x = (4.00/180)*Math.PI;
+	jupiter.rotation.x = (3.13/180)*Math.PI;
+	saturn.rotation.x = (26.73/180)*Math.PI;
+	uranus.rotation.x = (97.77/180)*Math.PI;
+	neptune.rotation.x = (28.32/180)*Math.PI;
+	pluto_charon.rotation.x = (122.53/180)*Math.PI;
+	eris.rotation.x = (43.9/180)*Math.PI;
+	sedna.rotation.x = (0/180)*Math.PI; //unknown
+
+	// Adjust ring orientations to line up w/ planets' equators
+	jupiter_rings.rotation.x = (90/180)*Math.PI;
+	saturn_rings.rotation.x = (90/180)*Math.PI;
+	uranus_rings.rotation.x = (90/180)*Math.PI;
+	neptune_rings.rotation.x = (90/180)*Math.PI;
+
+	// Adjust cloud rotation(s)
+	venus_clouds.rotation.y = Date.now() * (-0.25*earth_rotation);
+	earth_clouds.rotation.y = Date.now() * (1.5*earth_rotation);
+	mars_clouds.rotation.y = Date.now() * (1.3*earth_rotation);
+
+	// Rotation rates of the Sun and Planets
+	sun.rotation.y = Date.now() * sun_rotation;
+	mercury.rotation.y = Date.now() * mercury_rotation;
+	venus.rotation.y = Date.now() * venus_rotation;
+	earth.rotation.y = Date.now() * earth_rotation;
+	mars.rotation.y = Date.now() * mars_rotation;
+	ceres.rotation.y = Date.now() * ceres_rotation;
+	jupiter.rotation.y = Date.now() * jupiter_rotation;
+	saturn.rotation.y = Date.now() * saturn_rotation;
+	uranus.rotation.y = Date.now() * uranus_rotation;
+	neptune.rotation.y = Date.now() * neptune_rotation;
+	pluto_charon.rotation.y = Date.now() * pluto_rotation;
+	eris.rotation.y = Date.now() * eris_rotation;
+	sedna.rotation.y = Date.now() * sedna_rotation;
+}
+
+function revolvePlanets() {
+        
+	// This block determines the positions of the planets on their elliptical (rather than circular) paths.
+	mercury.position.x = Math.sin(Date.now() * mercury_year) * mercury_distance + mercury_eccentricity;
+        mercury.position.z = Math.cos(Date.now() * mercury_year) * (mercury_distance - 0.5 * mercury_eccentricity);
+ 
+	venus.position.x = Math.sin(Date.now() * venus_year) * venus_distance + venus_eccentricity;
+	venus.position.z = Math.cos(Date.now() * venus_year) * (venus_distance - 0.5 * venus_eccentricity);
+ 
+	earth.position.x = Math.sin(Date.now() * earth_year) * earth_distance + earth_eccentricity;
+	earth.position.z = Math.cos(Date.now() * earth_year) * (earth_distance - 0.5 * earth_eccentricity);
+
+	mars.position.x = Math.sin(Date.now() * mars_year) * mars_distance + mars_eccentricity;
+	mars.position.z = Math.cos(Date.now() * mars_year) * (mars_distance - 0.5 * mars_eccentricity);
+
+	ceres.position.x = Math.sin(Date.now() * ceres_year) * ceres_distance + ceres_eccentricity;
+	ceres.position.z = Math.cos(Date.now() * ceres_year) * (ceres_distance - 0.5 * ceres_eccentricity);
+
+	jupiter.position.x = Math.sin(Date.now() * jupiter_year) * jupiter_distance + jupiter_eccentricity;
+	jupiter.position.z = Math.cos(Date.now() * jupiter_year) * (jupiter_distance - 0.5 * jupiter_eccentricity);
+
+	saturn.position.x = Math.sin(Date.now() * saturn_year) * saturn_distance + saturn_eccentricity;
+	saturn.position.z = Math.cos(Date.now() * saturn_year) * (saturn_distance - 0.5 * saturn_eccentricity);
+
+	uranus.position.x = Math.sin(Date.now() * uranus_year) * uranus_distance + uranus_eccentricity;
+	uranus.position.z = Math.cos(Date.now() * uranus_year) * (uranus_distance - 0.5 * uranus_eccentricity);
+ 
+	neptune.position.x = Math.sin(Date.now() * neptune_year) * neptune_distance + neptune_eccentricity;
+	neptune.position.z = Math.cos(Date.now() * neptune_year) * (neptune_distance - 0.5 * neptune_eccentricity);
+ 
+	pluto_charon.position.x = Math.sin(Date.now() * pluto_year) * pluto_distance + pluto_eccentricity;
+	pluto_charon.position.z = Math.cos(Date.now() * pluto_year) * (pluto_distance - 0.5 * pluto_eccentricity);
+
+	eris.position.x = Math.sin(Date.now() * eris_year) * eris_distance + eris_eccentricity;
+        eris.position.z = Math.cos(Date.now() * eris_year) * (eris_distance - 0.5 * eris_eccentricity);
+
+	sedna.position.x = Math.sin(Date.now() * sedna_year) * sedna_distance + sedna_eccentricity;
+        sedna.position.z = Math.cos(Date.now() * sedna_year) * (sedna_distance - 0.5 * sedna_eccentricity);
+
+	egg.position.x = Math.sin(Date.now() * egg_year) * egg_distance + egg_eccentricity;
+	egg.position.z = Math.cos(Date.now() * egg_year) * (egg_distance - 0.5 * egg_eccentricity);
+}
+
+function rotateMoons() {
+	// The orbital rates are now accurate. And, orbital parameters have also been included!
+
+	// Cameras
+	sun_camera.rotation.y = Date.now() * -sun_rotation;
+	mercury_camera.rotation.y = Date.now() * -mercury_rotation;
+	venus_camera.rotation.y = Date.now() * -venus_rotation;
+	earth_camera.rotation.y = Date.now() * -earth_rotation;
+	moon_camera.rotation.y = Date.now() * -moon_rotation;
+	mars_camera.rotation.y = Date.now() * -mars_rotation;
+	ceres_camera.rotation.y = Date.now() * -ceres_rotation;
+	jupiter_camera.rotation.y = Date.now() * -jupiter_rotation;
+	io_camera.rotation.y = Date.now() * -io_rotation;
+	europa_camera.rotation.y = Date.now() * -europa_rotation;
+	ganymede_camera.rotation.y = Date.now() * -ganymede_rotation;
+	callisto_camera.rotation.y = Date.now() * -callisto_rotation;
+	saturn_camera.rotation.y = Date.now() * -saturn_rotation;
+	mimas_camera.rotation.y = Date.now() * -mimas_rotation;
+	enceladus_camera.rotation.y = Date.now() * -enceladus_rotation;
+	tethys_camera.rotation.y = Date.now() * -tethys_rotation;
+	dione_camera.rotation.y = Date.now() * -dione_rotation;
+	rhea_camera.rotation.y = Date.now() * -rhea_rotation;
+	titan_camera.rotation.y = Date.now() * -titan_rotation;
+	iapetus_camera.rotation.y = Date.now() * -iapetus_rotation;
+	uranus_camera.rotation.y = Date.now() * -uranus_rotation;
+	miranda_camera.rotation.y = Date.now() * -miranda_rotation;
+	ariel_camera.rotation.y = Date.now() * -ariel_rotation;
+	umbriel_camera.rotation.y = Date.now() * -umbriel_rotation;
+	titania_camera.rotation.y = Date.now() * -titania_rotation;
+	oberon_camera.rotation.y = Date.now() * -oberon_rotation;	
+	neptune_camera.rotation.y = Date.now() * -neptune_rotation;
+	triton_camera.rotation.y = Date.now() * -triton_rotation;
+	pluto_camera.rotation.y = Date.now() * -pluto_rotation;
+	eris_camera.rotation.y = Date.now() * -eris_rotation;
+	sedna_camera.rotation.y = Date.now() * -sedna_rotation;
+	egg_camera.rotation.y = Date.now() * -egg_rotation;
+
+	// Rings
+	jupiter_rings.rotation.z = Date.now() * jupiter_rotation;
+	saturn_rings.rotation.z = Date.now() * saturn_rotation;
+	uranus_rings.rotation.z = Date.now() * uranus_rotation;
+	neptune_rings.rotation.z = Date.now() * neptune_rotation;
+	
+	// Earth's Moon
+	moon.position.x = Math.sin(Date.now() * moon_rotation) * moon_distance + moon_eccentricity;
+	moon.position.z = Math.cos(Date.now() * moon_rotation) * (moon_distance - 0.5 * moon_eccentricity);
+	moon.rotation.y = (90/180)*Math.PI + Date.now() * moon_rotation; // Orients the Moon so that the near side is facing Earth.
+	moons_orbit.rotation.y = Date.now() * (-earth_rotation);
+
+	// Jupiter's four Galilean Moons
+	// Was able to achieve the 4:2:1 orbital resonance of Io, Europa, and Ganymede
+	io.position.x = Math.sin(Date.now() * io_rotation) * io_distance + io_eccentricity;;
+	io.position.z = Math.cos(Date.now() * io_rotation) * (io_distance - 0.5 * io_eccentricity);
+	io.rotation.y = Date.now() * io_rotation;
+        ios_orbit.rotation.y = Date.now() * (-jupiter_rotation);
+        
+	europa.position.x = Math.sin(Date.now() * europa_rotation) * europa_distance + europa_eccentricity;
+	europa.position.z = Math.cos(Date.now() * europa_rotation) * (europa_distance - 0.5 * europa_eccentricity);
+        europa.rotation.y = Date.now() * europa_rotation;
+	europas_orbit.rotation.y = Date.now() * (-jupiter_rotation);
+	
+	ganymede.position.x = Math.sin(Date.now() * ganymede_rotation) * ganymede_distance + ganymede_eccentricity;
+	ganymede.position.z = Math.cos(Date.now() * ganymede_rotation) * (ganymede_distance - 0.5 * ganymede_eccentricity);
+	ganymede.rotation.y = Date.now() * ganymede_rotation;
+	ganymedes_orbit.rotation.y = Date.now() * (-jupiter_rotation);
+	
+	callisto.position.x = Math.sin(Date.now() * callisto_rotation) * callisto_distance + callisto_eccentricity;
+	callisto.position.z = Math.cos(Date.now() * callisto_rotation) * (callisto_distance - 0.5 * callisto_eccentricity);
+	callisto.rotation.y = Date.now() * callisto_rotation;
+	callistos_orbit.rotation.y = Date.now() * (-jupiter_rotation);
+
+	// Saturn's Moons
+	mimas.position.x = Math.sin(Date.now() * mimas_rotation) * mimas_distance + mimas_eccentricity;
+	mimas.position.z = Math.cos(Date.now() * mimas_rotation) * (mimas_distance - 0.5 * mimas_eccentricity);
+	mimas.rotation.y = (-50/180)*Math.PI + Date.now() * mimas_rotation;
+	mimass_orbit.rotation.y = Date.now() * (-saturn_rotation);
+
+	enceladus.position.x = Math.sin(Date.now() * enceladus_rotation) * enceladus_distance + enceladus_eccentricity;
+	enceladus.position.z = Math.cos(Date.now() * enceladus_rotation) * (enceladus_distance  - 0.5 * enceladus_eccentricity);
+	enceladus.rotation.y = Date.now() * enceladus_rotation;
+	enceladuss_orbit.rotation.y = Date.now() * (-saturn_rotation);
+
+	tethys.position.x = Math.sin(Date.now() * tethys_rotation) * tethys_distance + tethys_eccentricity;
+	tethys.position.z = Math.cos(Date.now() * tethys_rotation) * (tethys_distance - 0.5 * tethys_eccentricity);
+	tethys.rotation.y = Date.now() * tethys_rotation;
+	tethyss_orbit.rotation.y = Date.now() * (-saturn_rotation);
+
+	dione.position.x = Math.sin(Date.now() * dione_rotation) * dione_distance + dione_eccentricity;
+	dione.position.z = Math.cos(Date.now() * dione_rotation) * (dione_distance - 0.5 * dione_eccentricity);
+	dione.rotation.y = Date.now() * dione_rotation;
+	diones_orbit.rotation.y = Date.now() * (-saturn_rotation);
+
+	rhea.position.x = Math.sin(Date.now() * rhea_rotation) * rhea_distance + rhea_eccentricity;
+	rhea.position.z = Math.cos(Date.now() * rhea_rotation) * (rhea_distance - 0.5 * rhea_eccentricity);
+	rhea.rotation.y = Date.now() * rhea_rotation;
+	rheas_orbit.rotation.y = Date.now() * (-saturn_rotation);
+
+	titan.position.x = Math.sin(Date.now() * titan_rotation) * titan_distance + titan_eccentricity;
+	titan.position.z = Math.cos(Date.now() * titan_rotation) * (titan_distance - 0.5 * titan_eccentricity);
+	titan.rotation.y = Date.now() * titan_rotation;
+	titan_clouds.rotation.y = Date.now() * (0.1 * earth_rotation);
+	titans_orbit.rotation.y = Date.now() * (-saturn_rotation);
+
+	iapetus.position.x = Math.sin(Date.now() * iapetus_rotation) * iapetus_distance + iapetus_eccentricity;
+	iapetus.position.z = Math.cos(Date.now() * iapetus_rotation) * (iapetus_distance - 0.5 * iapetus_eccentricity);
+	iapetus.rotation.y = Date.now() * iapetus_rotation;
+	iapetuss_orbit.rotation.y = Date.now() * (-saturn_rotation); 
+
+	// Uranus's Moons
+	miranda.position.x = Math.sin(Date.now() * miranda_rotation) * miranda_distance + miranda_eccentricity;
+	miranda.position.z = Math.cos(Date.now() * miranda_rotation) * (miranda_distance - 0.5 * miranda_eccentricity);
+	miranda.rotation.y = Date.now() * miranda_rotation;
+	mirandas_orbit.rotation.y = Date.now() * (-uranus_rotation);
+
+	ariel.position.x = Math.sin(Date.now() * ariel_rotation) * ariel_distance + ariel_eccentricity;
+	ariel.position.z = Math.cos(Date.now() * ariel_rotation) * (ariel_distance - 0.5 * ariel_eccentricity);
+	ariel.rotation.y = Date.now() * ariel_rotation;
+	ariels_orbit.rotation.y = Date.now() * (-uranus_rotation);
+
+	umbriel.position.x = Math.sin(Date.now() * umbriel_rotation) * umbriel_distance + umbriel_eccentricity;
+	umbriel.position.z = Math.cos(Date.now() * umbriel_rotation) * (umbriel_distance - 0.5 * umbriel_eccentricity);
+	umbriel.rotation.y = Date.now() * umbriel_rotation;
+	umbriels_orbit.rotation.y = Date.now() * (-uranus_rotation);
+
+	titania.position.x = Math.sin(Date.now() * titania_rotation) * titania_distance + titania_eccentricity;
+	titania.position.z = Math.cos(Date.now() * titania_rotation) * (titania_distance - 0.5 * titania_eccentricity);
+	titania.rotation.y = Date.now() * titania_rotation;
+	titanias_orbit.rotation.y = Date.now() * (-uranus_rotation);
+
+	oberon.position.x = Math.sin(Date.now() * oberon_rotation) * oberon_distance + oberon_eccentricity;
+	oberon.position.z = Math.cos(Date.now() * oberon_rotation) * (oberon_distance - 0.5 * oberon_eccentricity);
+	oberon.rotation.y = Date.now() * oberon_rotation;
+	oberons_orbit.rotation.y = Date.now() * (-uranus_rotation);
+
+	// Neptune's Moons
+	triton.position.x = Math.sin(Date.now() * triton_rotation) * triton_distance + triton_eccentricity;
+	triton.position.z = Math.cos(Date.now() * triton_rotation) * (triton_distance - 0.5 * triton_eccentricity);
+	triton.rotation.y = Date.now() * triton_rotation;
+	tritons_orbit.rotation.y = Date.now() * (-neptune_rotation);	// retrograde revolution
+
+	// Since Pluto and Charon are tidally-locked to each other, they need not be included in this function.
+}
+
+draw();
+
+function draw() {
+	
+	requestAnimationFrame(draw);
+	
+	rotatePlanets();
+	revolvePlanets();
+	rotateMoons();
+	
+	renderer.autoClear = false;
+	renderer.sortObjects = false;
+	renderer.clear();
+	renderer.render(backgroundScene, backgroundCamera);
+	renderer.render(scene, camera);
+}
+</script></body></html>
